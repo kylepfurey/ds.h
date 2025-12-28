@@ -9,7 +9,75 @@
 
 /** Declares a named shared pointer for the given type. */
 #define DECLARE_SHARED_NAMED(name, T, deleter)\
-// TODO
+\
+typedef struct {\
+    size_t shared_count;\
+    size_t weak_count;\
+    T *data;\
+} __##name##_control_block;\
+\
+typedef struct {\
+    __##name##_control_block *control_block;\
+} name;\
+\
+static inline name name##_new(T data) {\
+    __##name##_control_block *control_block =\
+    (__##name##_control_block *) malloc(sizeof(__##name##_control_block));\
+    assert(control_block != NULL);\
+    control_block->shared_count = 1;\
+    control_block->weak_count = 0;\
+    control_block->data = (T *) malloc(sizeof(T));\
+    assert(control_block->data != NULL);\
+    *control_block->data = data;\
+    return (name) {\
+        control_block,\
+    };\
+}\
+\
+static inline void name##_free(name *self) {\
+    assert(self != NULL);\
+    __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    --control_block->shared_count;\
+    if (control_block->shared_count == 0) {\
+        deleter(control_block->data);\
+        free(control_block->data);\
+        control_block->data = NULL;\
+        if (control_block->weak_count == 0) {\
+            free(control_block);\
+            self->control_block = NULL;\
+        }\
+    }\
+}\
+\
+static inline name name##_copy(name *self) {\
+    assert(self != NULL);\
+    __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    assert(control_block->data != NULL);\
+    ++control_block->shared_count;\
+    return *self;\
+}\
+\
+static inline T *name##_get(name *self) {\
+    assert(self != NULL);\
+    __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    assert(control_block->data != NULL);\
+    return control_block->data;\
+}\
+\
+static inline const T *name##_get_const(const name *self) {\
+    assert(self != NULL);\
+    const __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    assert(control_block->data != NULL);\
+    return control_block->data;\
+}
 
 /** Declares a shared pointer for the given type. */
 #define DECLARE_SHARED(T, deleter) DECLARE_SHARED_NAMED(shared_##T, T, deleter)

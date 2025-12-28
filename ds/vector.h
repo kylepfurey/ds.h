@@ -112,6 +112,32 @@ static inline void name##_clear(name *self) {\
     self->count = 0;\
 }\
 \
+static inline bool name##_foreach(name *self, bool(*action)(T *)) {\
+    assert(self != NULL);\
+    assert(action != NULL);\
+    assert(self->count <= self->capacity);\
+    assert(self->array != NULL);\
+    for (size_t i = 0; i < self->count; ++i) {\
+        if (!action(&self->array[i])) {\
+            return false;\
+        }\
+    }\
+    return true;\
+}\
+\
+static inline bool name##_foreach_const(const name *self, bool(*action)(const T *)) {\
+    assert(self != NULL);\
+    assert(action != NULL);\
+    assert(self->count <= self->capacity);\
+    assert(self->array != NULL);\
+    for (size_t i = 0; i < self->count; ++i) {\
+        if (!action(&self->array[i])) {\
+            return false;\
+        }\
+    }\
+    return true;\
+}\
+\
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\

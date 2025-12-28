@@ -14,6 +14,7 @@ add_executable(ds
         ds/shared.h
         ds/weak.h
         ds/signal.h
+        ds/slab.h
         ds.h
         main.c
 )

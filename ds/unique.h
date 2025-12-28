@@ -23,14 +23,6 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
-static inline void name##_free(name *self) {\
-    assert(self != NULL);\
-    assert(self->data != NULL);\
-    deleter(self->data);\
-    free(self->data);\
-    self->data = NULL;\
-}\
-\
 static inline T *name##_get(name *self) {\
     assert(self != NULL);\
     assert(self->data != NULL);\
@@ -41,6 +33,21 @@ static inline const T *name##_get_const(const name *self) {\
     assert(self != NULL);\
     assert(self->data != NULL);\
     return self->data;\
+}\
+\
+static inline void name##_reset(name *self, T data) {\
+    assert(self != NULL);\
+    assert(self->data != NULL);\
+    deleter(self->data);\
+    *self->data = data;\
+}\
+\
+static inline void name##_free(name *self) {\
+    assert(self != NULL);\
+    assert(self->data != NULL);\
+    deleter(self->data);\
+    free(self->data);\
+    self->data = NULL;\
 }
 
 /** Declares a unique pointer for the given type. */

@@ -14,7 +14,7 @@
 #include "ds/unique.h"
 #include "ds/shared.h"
 #include "ds/weak.h"
-#include "ds/signal.h"
 #include "ds/slab.h"
+#include "ds/signal.h"
 
 #endif // DS_H

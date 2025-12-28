@@ -13,8 +13,8 @@ add_executable(ds
         ds/unique.h
         ds/shared.h
         ds/weak.h
-        ds/signal.h
         ds/slab.h
+        ds/signal.h
         ds.h
         main.c
 )

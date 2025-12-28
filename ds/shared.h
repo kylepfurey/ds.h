@@ -34,23 +34,6 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
-static inline void name##_free(name *self) {\
-    assert(self != NULL);\
-    __##name##_control_block *control_block = self->control_block;\
-    assert(control_block != NULL);\
-    assert(control_block->shared_count > 0);\
-    --control_block->shared_count;\
-    if (control_block->shared_count == 0) {\
-        deleter(control_block->data);\
-        free(control_block->data);\
-        control_block->data = NULL;\
-        if (control_block->weak_count == 0) {\
-            free(control_block);\
-            self->control_block = NULL;\
-        }\
-    }\
-}\
-\
 static inline name name##_copy(name *self) {\
     assert(self != NULL);\
     __##name##_control_block *control_block = self->control_block;\
@@ -59,6 +42,16 @@ static inline name name##_copy(name *self) {\
     assert(control_block->data != NULL);\
     ++control_block->shared_count;\
     return *self;\
+}\
+\
+static inline void name##_reset(name *self, T data) {\
+    assert(self != NULL);\
+    __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    assert(control_block->data != NULL);\
+    deleter(control_block->data);\
+    *control_block->data = data;\
 }\
 \
 static inline T *name##_get(name *self) {\
@@ -77,6 +70,23 @@ static inline const T *name##_get_const(const name *self) {\
     assert(control_block->shared_count > 0);\
     assert(control_block->data != NULL);\
     return control_block->data;\
+}\
+\
+static inline void name##_free(name *self) {\
+    assert(self != NULL);\
+    __##name##_control_block *control_block = self->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    --control_block->shared_count;\
+    if (control_block->shared_count == 0) {\
+        deleter(control_block->data);\
+        free(control_block->data);\
+        control_block->data = NULL;\
+        if (control_block->weak_count == 0) {\
+            free(control_block);\
+            self->control_block = NULL;\
+        }\
+    }\
 }
 
 /** Declares a shared pointer for the given type. */

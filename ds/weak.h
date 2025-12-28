@@ -26,19 +26,6 @@ static inline name name##_new(shared_name *shared) {\
     };\
 }\
 \
-static inline void name##_free(name *self) {\
-    assert(self != NULL);\
-    assert(self->control_block != NULL);\
-    __##shared_name##_control_block *control_block = self->control_block;\
-    assert(control_block->weak_count > 0);\
-    --control_block->weak_count;\
-    if (control_block->weak_count == 0 && control_block->shared_count == 0) {\
-        assert(control_block->data == NULL);\
-        free(control_block);\
-        self->control_block = NULL;\
-    }\
-}\
-\
 static inline bool name##_valid(const name *self) {\
     assert(self != NULL);\
     assert(self->control_block != NULL);\
@@ -59,6 +46,19 @@ static inline shared_name name##_upgrade(name *self) {\
     return (shared_name) {\
         control_block,\
     };\
+}\
+\
+static inline void name##_free(name *self) {\
+    assert(self != NULL);\
+    assert(self->control_block != NULL);\
+    __##shared_name##_control_block *control_block = self->control_block;\
+    assert(control_block->weak_count > 0);\
+    --control_block->weak_count;\
+    if (control_block->weak_count == 0 && control_block->shared_count == 0) {\
+        assert(control_block->data == NULL);\
+        free(control_block);\
+        self->control_block = NULL;\
+    }\
 }
 
 /** Declares a weak pointer for the given type. */

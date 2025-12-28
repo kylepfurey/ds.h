@@ -19,7 +19,7 @@ typedef struct {\
 \
 DECLARE_SLAB_NAMED(__##name##_slab, __##name##_binding, void_deleter)\
 \
-typedef __##name##_binding##_id name##_handle;\
+typedef __##name##_slab_id name##_handle;\
 \
 typedef struct {\
     __##name##_slab slab;\
@@ -34,7 +34,7 @@ static inline name name##_new(size_t capacity) {\
 \
 static inline bool name##_bound(const name *self, name##_handle handle) {\
     assert(self != NULL);\
-    return __##name##_slab_valid(&self->slab, (__##name##_binding##_id) handle);\
+    return __##name##_slab_valid(&self->slab, (__##name##_slab_id) handle);\
 }\
 \
 static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
@@ -47,7 +47,7 @@ static inline name##_handle name##_bind(name *self, T *target, name##_func func)
 static inline void name##_unbind(name *self, name##_handle handle) {\
     assert(self != NULL);\
     assert(name##_bound(self, handle));\
-    __##name##_slab_return(&self->slab, (__##name##_binding##_id) handle);\
+    __##name##_slab_return(&self->slab, (__##name##_slab_id) handle);\
 }\
 \
 static inline void name##_clear(name *self) {\

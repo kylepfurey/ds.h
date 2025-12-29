@@ -40,6 +40,11 @@ static inline name name##_new(size_t capacity) {\
     };\
 }\
 \
+static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->count;\
+}\
+\
 static inline bool name##_valid(const name *self, name##_id id) {\
     assert(self != NULL);\
     const __##name##_vector *vector = &self->vector;\

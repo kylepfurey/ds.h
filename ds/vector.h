@@ -8,7 +8,7 @@
 #include "std.h"
 
 /** The rate to expand vectors at. */
-#define VECTOR_EXPANSION (2)
+#define VECTOR_EXPANSION 2
 
 /** Declares a named dynamic array of the given type. */
 #define DECLARE_VECTOR_NAMED(name, T, deleter)\
@@ -28,6 +28,21 @@ static inline name name##_new(size_t capacity) {\
         capacity,\
         array,\
     };\
+}\
+\
+static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->count;\
+}\
+\
+static inline size_t name##_capacity(const name *self) {\
+    assert(self != NULL);\
+    return self->capacity;\
+}\
+\
+static inline bool name##_valid(const name *self, size_t index) {\
+    assert(self != NULL);\
+    return index < self->count;\
 }\
 \
 static inline T *name##_get(name *self, size_t index) {\

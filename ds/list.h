@@ -30,6 +30,16 @@ static inline name name##_new() {\
     };\
 }\
 \
+static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->count;\
+}\
+\
+static inline bool name##_valid(const name *self, size_t index) {\
+    assert(self != NULL);\
+    return index < self->count;\
+}\
+\
 static inline name##_node *name##_get(name *self, size_t index) {\
     assert(self != NULL);\
     assert(index < self->count);\
@@ -214,15 +224,12 @@ static inline void name##_pop_back(name *self) {\
 static inline void name##_clear(name *self) {\
     assert(self != NULL);\
     name##_node *current = self->head;\
-    size_t remaining = self->count;\
     while (current != NULL) {\
         name##_node *next = current->next;\
         deleter(&current->data);\
         free(current);\
         current = next;\
-        --remaining;\
     }\
-    assert(remaining == 0);\
     self->count = 0;\
     self->head = NULL;\
     self->tail = NULL;\
@@ -232,15 +239,12 @@ static inline bool name##_foreach(name *self, bool (*action)(T *)) {\
     assert(self != NULL);\
     assert(action != NULL);\
     name##_node *current = self->head;\
-    size_t remaining = self->count;\
     while (current != NULL) {\
         if (!action(&current->data)) {\
             return false;\
         }\
         current = current->next;\
-        --remaining;\
     }\
-    assert(remaining == 0);\
     return true;\
 }\
 \
@@ -248,15 +252,12 @@ static inline bool name##_foreach_const(const name *self, bool (*action)(const T
     assert(self != NULL);\
     assert(action != NULL);\
     const name##_node *current = self->head;\
-    size_t remaining = self->count;\
     while (current != NULL) {\
         if (!action(&current->data)) {\
             return false;\
         }\
         current = current->next;\
-        --remaining;\
     }\
-    assert(remaining == 0);\
     return true;\
 }\
 \

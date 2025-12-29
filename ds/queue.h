@@ -27,6 +27,11 @@ static inline name name##_new() {\
     };\
 }\
 \
+static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->list.count;\
+}\
+\
 static inline bool name##_empty(const name *self) {\
     assert(self != NULL);\
     assert((self->list.count == 0) ==\

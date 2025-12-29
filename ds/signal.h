@@ -32,6 +32,11 @@ static inline name name##_new(size_t capacity) {\
     };\
 }\
 \
+static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->slab.count;\
+}\
+\
 static inline bool name##_bound(const name *self, name##_handle handle) {\
     assert(self != NULL);\
     return __##name##_slab_valid(&self->slab, (__##name##_slab_id) handle);\

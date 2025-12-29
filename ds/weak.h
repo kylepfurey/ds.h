@@ -26,6 +26,18 @@ static inline name name##_new(shared_name *shared) {\
     };\
 }\
 \
+static inline size_t name##_shared_count(const name *self) {\
+    assert(self != NULL);\
+    assert(self->control_block != NULL);\
+    return self->control_block->shared_count;\
+}\
+\
+static inline size_t name##_weak_count(const name *self) {\
+    assert(self != NULL);\
+    assert(self->control_block != NULL);\
+    return self->control_block->weak_count;\
+}\
+\
 static inline bool name##_valid(const name *self) {\
     assert(self != NULL);\
     assert(self->control_block != NULL);\

@@ -7,6 +7,9 @@
 
 #include "std.h"
 
+/** The rate to expand vectors at. */
+#define VECTOR_EXPANSION (2)
+
 /** Declares a named dynamic array of the given type. */
 #define DECLARE_VECTOR_NAMED(name, T, deleter)\
 \
@@ -68,9 +71,9 @@ static inline void name##_insert(name *self, size_t index, T data) {\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     assert(index <= self->count);\
-    assert(self->capacity <= SIZE_MAX / (sizeof(T) * 2));\
+    assert(self->capacity <= SIZE_MAX / (sizeof(T) * VECTOR_EXPANSION));\
     if (self->count == self->capacity) {\
-        name##_resize(self, self->capacity * 2);\
+        name##_resize(self, self->capacity * VECTOR_EXPANSION);\
     }\
     memmove(self->array + index + 1, self->array + index, sizeof(T) * (self->count - index));\
     ++self->count;\

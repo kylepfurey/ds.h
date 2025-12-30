@@ -7,6 +7,7 @@
 
 #include "ds/std.h"
 #include "ds/def.h"
+#include "ds/allocator.h"
 #include "ds/vector.h"
 #include "ds/string.h"
 #include "ds/list.h"

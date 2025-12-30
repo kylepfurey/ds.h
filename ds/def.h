@@ -13,6 +13,12 @@
 #define ds_realloc  realloc
 #define ds_free     free
 
+/** Aligns a size for an allocator. */
+#define ALLOCATOR_ALIGN(size, alignment) (((size) + ((alignment) - 1)) & ~((alignment) - 1))
+
+/** Whether to assert when a deleted allocator leaks memory. */
+#define ALLOCATOR_LEAK_ASSERT 1
+
 /** The rate to expand vectors at. */
 #define VECTOR_EXPANSION 2
 

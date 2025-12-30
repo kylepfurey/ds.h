@@ -56,7 +56,7 @@ static inline void name##_free(name *self) {\
     assert(self->data != NULL);\
     deleter(self->data);\
     free(self->data);\
-    self->data = NULL;\
+    *self = (name) {0};\
 }
 
 /** Declares a unique pointer for the given type. */

@@ -170,18 +170,12 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     size_t remaining = self->count;\
-    if (remaining == 0) {\
-        return;\
-    }\
-    for (size_t i = 0; i < vector->count; ++i) {\
+    for (size_t i = 0; remaining > 0 && i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
             continue;\
         }\
         action(vector->array[i].data);\
         --remaining;\
-        if (remaining == 0) {\
-            break;\
-        }\
     }\
     assert(remaining == 0);\
 }\
@@ -190,6 +184,7 @@ static inline void name##_free(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
     __##name##_vector_free(&self->buckets);\
+    *self = (name) {0};\
 }
 
 /** Declares a slab allocator of the given type. */

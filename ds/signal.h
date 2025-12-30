@@ -81,6 +81,7 @@ static inline void name##_clear(name *self) {\
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     __##name##_slab_free(&self->bindings);\
+    *self = (name) {0};\
 }
 
 /** Declares an event handler for the given function signature.  */
@@ -94,10 +95,7 @@ do {\
     assert((self)->bindings.count <= (self)->bindings.vector.count);\
     assert((self)->bindings.vector.array != NULL);\
     size_t remaining = (self)->bindings.count;\
-    if (remaining == 0) {\
-        break;\
-    }\
-    for (size_t i = 0; i < (self)->bindings.vector.count; ++i) {\
+    for (size_t i = 0; remaining > 0 && i < (self)->bindings.vector.count; ++i) {\
         if ((self)->bindings.vector.array[i].age == 0) {\
             continue;\
         }\
@@ -105,9 +103,6 @@ do {\
         assert((self)->bindings.vector.array[i].data.func != NULL);\
         (self)->bindings.vector.array[i].data.func((self)->bindings.vector.array[i].data.target, ##__VA_ARGS__);\
         --remaining;\
-        if (remaining == 0) {\
-            break;\
-        }\
     }\
     assert(remaining == 0);\
 } while (false);

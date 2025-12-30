@@ -384,6 +384,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     __##name##_vector_free(&self->buffer);\
+    *self = (name) {0};\
 }
 
 /** Declares a mutable string of the given type. */

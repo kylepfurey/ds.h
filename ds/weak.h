@@ -80,8 +80,8 @@ static inline void name##_free(name *self) {\
     if (control_block->weak_count == 0 && control_block->shared_count == 0) {\
         assert(control_block->data == NULL);\
         free(control_block);\
-        self->control_block = NULL;\
     }\
+    *self = (name) {0};\
 }
 
 /** Declares a weak pointer for the given type. */

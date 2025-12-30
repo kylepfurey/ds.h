@@ -22,15 +22,20 @@ typedef struct {\
 } name;\
 \
 static inline name name##_new() {\
-}\
-\
-static inline name name##_copy(const name *set) {\
+    return (name) {\
+        0,\
+        NULL,\
+    };\
 }\
 \
 static inline size_t name##_count(const name *self) {\
+    assert(self != NULL);\
+    return self->count;\
 }\
 \
 static inline bool name##_empty(const name *self) {\
+    assert(self != NULL);\
+    return self->count == 0;\
 }\
 \
 static inline const T *name##_find(const name *self, T data) {\
@@ -49,6 +54,9 @@ static inline bool name##_contains(const name *self, T data) {\
 }\
 \
 static inline bool name##_insert(name *self, T data) {\
+}\
+\
+static inline name name##_copy(const name *set) {\
 }\
 \
 static inline bool name##_erase(name *self, T data) {\

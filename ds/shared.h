@@ -96,9 +96,9 @@ static inline void name##_free(name *self) {\
         control_block->data = NULL;\
         if (control_block->weak_count == 0) {\
             free(control_block);\
-            self->control_block = NULL;\
         }\
     }\
+    *self = (name) {0};\
 }
 
 /** Declares a shared pointer for the given type. */

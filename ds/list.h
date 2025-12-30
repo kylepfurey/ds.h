@@ -264,6 +264,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
+    *self = (name) {0};\
 }
 
 /** Declares a doubly linked list of the given type. */

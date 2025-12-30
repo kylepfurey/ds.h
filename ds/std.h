@@ -22,7 +22,7 @@
 #define DEFAULT_EQUALS x == y
 
 /** A placeholder for a trivially hashable value. */
-#define DEFAULT_HASH hashify(sizeof(key), key)
+#define DEFAULT_HASH hashify(sizeof(key), &key)
 
 /** A placeholder for a no-op deleter function. */
 static inline void void_deleter(void *self) {

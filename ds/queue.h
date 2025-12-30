@@ -133,13 +133,10 @@ static inline void name##_pop_last(name *self) {\
 static inline void name##_clear(name *self) {\
     assert(self != NULL);\
     __##name##_list_node *current = self->queue.head;\
-    size_t remaining = self->queue.count;\
     while (current != NULL) {\
         deleter(&current->data.data);\
         current = current->next;\
-        --remaining;\
     }\
-    assert(remaining == 0);\
     __##name##_list_clear(&self->queue);\
 }\
 \
@@ -156,6 +153,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
+    *self = (name) {0};\
 }
 
 /** Declares a priority queue of the given types. */

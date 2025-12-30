@@ -206,9 +206,8 @@ static inline void name##_free(name *self) {\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     name##_clear(self);\
-    self->capacity = 0;\
     free(self->array);\
-    self->array = NULL;\
+    *self = (name) {0};\
 }
 
 /** Declares a dynamic array of the given type. */

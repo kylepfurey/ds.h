@@ -34,6 +34,16 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
+static inline name name##_copy(name *shared) {\
+    assert(shared != NULL);\
+    __##name##_control_block *control_block = shared->control_block;\
+    assert(control_block != NULL);\
+    assert(control_block->shared_count > 0);\
+    assert(control_block->data != NULL);\
+    ++control_block->shared_count;\
+    return *shared;\
+}\
+\
 static inline size_t name##_shared_count(const name *self) {\
     assert(self != NULL);\
     assert(self->control_block != NULL);\
@@ -44,16 +54,6 @@ static inline size_t name##_weak_count(const name *self) {\
     assert(self != NULL);\
     assert(self->control_block != NULL);\
     return self->control_block->weak_count;\
-}\
-\
-static inline name name##_copy(name *self) {\
-    assert(self != NULL);\
-    __##name##_control_block *control_block = self->control_block;\
-    assert(control_block != NULL);\
-    assert(control_block->shared_count > 0);\
-    assert(control_block->data != NULL);\
-    ++control_block->shared_count;\
-    return *self;\
 }\
 \
 static inline void name##_reset(name *self, T data) {\

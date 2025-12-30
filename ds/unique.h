@@ -15,11 +15,20 @@ typedef struct {\
 } name;\
 \
 static inline name name##_new(T data) {\
-    T *ptr = (T *) malloc(sizeof(T));\
-    assert(ptr != NULL);\
-    *ptr = data;\
+    T *self = (T *) malloc(sizeof(T));\
+    assert(self != NULL);\
+    *self = data;\
     return (name) {\
-        ptr,\
+        self,\
+    };\
+}\
+\
+static inline name name##_copy(name *unique) {\
+    T *self = (T *) malloc(sizeof(T));\
+    assert(self != NULL);\
+    *self = *unique->data;\
+    return (name) {\
+        self,\
     };\
 }\
 \

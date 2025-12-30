@@ -11,12 +11,12 @@
 #define DECLARE_SLAB_NAMED(name, T, deleter)\
 \
 typedef struct {\
-    uint32_t index;\
-    uint32_t age;\
+    unsigned int index;\
+    unsigned int age;\
 } name##_id;\
 \
 typedef struct {\
-    uint32_t age;\
+    unsigned int age;\
     T data;\
 } __##name##_block;\
 \
@@ -25,7 +25,7 @@ DECLARE_VECTOR_NAMED(__##name##_vector, __##name##_block, void_deleter)\
 typedef struct {\
     size_t count;\
     name##_id next;\
-    __##name##_vector vector;\
+    __##name##_vector buckets;\
 } name;\
 \
 static inline name name##_new(size_t capacity) {\
@@ -40,27 +40,41 @@ static inline name name##_new(size_t capacity) {\
     };\
 }\
 \
+static inline name name##_copy(const name *slab) {\
+    assert(slab != NULL);\
+    return (name) {\
+        slab->count,\
+        slab->next,\
+        __##name##_vector_copy(&slab->buckets),\
+    };\
+}\
+\
 static inline size_t name##_count(const name *self) {\
     assert(self != NULL);\
     return self->count;\
 }\
 \
+static inline bool name##_empty(const name *self) {\
+    assert(self != NULL);\
+    return self->count == 0;\
+}\
+\
 static inline bool name##_valid(const name *self, name##_id id) {\
     assert(self != NULL);\
-    const __##name##_vector *vector = &self->vector;\
+    const __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     if (self->count == 0 || id.index >= vector->count) {\
         return false;\
     }\
-    uint32_t age = vector->array[id.index].age;\
+    unsigned int age = vector->array[id.index].age;\
     return age != 0 && age == id.age;\
 }\
 \
 static inline T *name##_get(name *self, name##_id id) {\
     assert(self != NULL);\
     assert(name##_valid(self, id));\
-    __##name##_vector *vector = &self->vector;\
+    __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -70,7 +84,7 @@ static inline T *name##_get(name *self, name##_id id) {\
 static inline const T *name##_get_const(const name *self, name##_id id) {\
     assert(self != NULL);\
     assert(name##_valid(self, id));\
-    const __##name##_vector *vector = &self->vector;\
+    const __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -79,12 +93,18 @@ static inline const T *name##_get_const(const name *self, name##_id id) {\
 \
 static inline name##_id name##_borrow(name *self, T data) {\
     assert(self != NULL);\
-    __##name##_vector *vector = &self->vector;\
+    __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     name##_id id = self->next;\
     if (id.index == vector->count) {\
-        __##name##_vector_push(vector, (__##name##_block) { id.age, data, });\
+        __##name##_vector_push(\
+            vector,\
+            (__##name##_block) {\
+                id.age,\
+                data,\
+            }\
+        );\
         assert(self->count < vector->count);\
         ++self->next.index;\
     } else {\
@@ -105,7 +125,7 @@ static inline void name##_return(name *self, name##_id id) {\
     assert(self != NULL);\
     assert(self->count > 0);\
     assert(name##_valid(self, id));\
-    __##name##_vector *vector = &self->vector;\
+    __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -119,7 +139,7 @@ static inline void name##_return(name *self, name##_id id) {\
 \
 static inline void name##_clear(name *self) {\
     assert(self != NULL);\
-    __##name##_vector *vector = &self->vector;\
+    __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     if (self->count == 0) {\
@@ -137,65 +157,39 @@ static inline void name##_clear(name *self) {\
         }\
     }\
     assert(self->count == 0);\
-    self->next = (name##_id) { 0, self->next.age };\
+    self->next = (name##_id) {\
+        0,\
+        self->next.age,\
+    };\
 }\
 \
-static inline bool name##_foreach(name *self, bool(*action)(T *)) {\
+static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(self != NULL);\
     assert(action != NULL);\
-    __##name##_vector *vector = &self->vector;\
+    const __##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     size_t remaining = self->count;\
     if (remaining == 0) {\
-        return true;\
+        return;\
     }\
     for (size_t i = 0; i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
             continue;\
         }\
-        if (!action(&vector->array[i].data)) {\
-            return false;\
-        }\
+        action(vector->array[i].data);\
         --remaining;\
         if (remaining == 0) {\
             break;\
         }\
     }\
     assert(remaining == 0);\
-    return true;\
-}\
-\
-static inline bool name##_foreach_const(const name *self, bool(*action)(const T *)) {\
-    assert(self != NULL);\
-    assert(action != NULL);\
-    const __##name##_vector *vector = &self->vector;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
-    size_t remaining = self->count;\
-    if (remaining == 0) {\
-        return true;\
-    }\
-    for (size_t i = 0; i < vector->count; ++i) {\
-        if (vector->array[i].age == 0) {\
-            continue;\
-        }\
-        if (!action(&vector->array[i].data)) {\
-            return false;\
-        }\
-        --remaining;\
-        if (remaining == 0) {\
-            break;\
-        }\
-    }\
-    assert(remaining == 0);\
-    return true;\
 }\
 \
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
-    __##name##_vector_free(&self->vector);\
+    __##name##_vector_free(&self->buckets);\
 }
 
 /** Declares a slab allocator of the given type. */

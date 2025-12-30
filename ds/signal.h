@@ -22,7 +22,7 @@ DECLARE_SLAB_NAMED(__##name##_slab, __##name##_binding, void_deleter)\
 typedef __##name##_slab_id name##_handle;\
 \
 typedef struct {\
-    __##name##_slab slab;\
+    __##name##_slab bindings;\
 } name;\
 \
 static inline name name##_new(size_t capacity) {\
@@ -32,37 +32,55 @@ static inline name name##_new(size_t capacity) {\
     };\
 }\
 \
+static inline name name##_copy(const name *signal) {\
+    assert(signal != NULL);\
+    return (name) {\
+        __##name##_slab_copy(&signal->bindings),\
+    };\
+}\
+\
 static inline size_t name##_count(const name *self) {\
     assert(self != NULL);\
-    return self->slab.count;\
+    return self->bindings.count;\
+}\
+\
+static inline size_t name##_empty(const name *self) {\
+    assert(self != NULL);\
+    return self->bindings.count == 0;\
 }\
 \
 static inline bool name##_bound(const name *self, name##_handle handle) {\
     assert(self != NULL);\
-    return __##name##_slab_valid(&self->slab, (__##name##_slab_id) handle);\
+    return __##name##_slab_valid(&self->bindings, (__##name##_slab_id) handle);\
 }\
 \
 static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
     assert(self != NULL);\
     assert(target != NULL);\
     assert(func != NULL);\
-    return (name##_handle ) __##name##_slab_borrow(&self->slab, (__##name##_binding) { target, func, });\
+    return (name##_handle ) __##name##_slab_borrow(\
+        &self->bindings,\
+        (__##name##_binding) {\
+            target,\
+            func,\
+        }\
+    );\
 }\
 \
 static inline void name##_unbind(name *self, name##_handle handle) {\
     assert(self != NULL);\
     assert(name##_bound(self, handle));\
-    __##name##_slab_return(&self->slab, (__##name##_slab_id) handle);\
+    __##name##_slab_return(&self->bindings, (__##name##_slab_id) handle);\
 }\
 \
 static inline void name##_clear(name *self) {\
     assert(self != NULL);\
-    __##name##_slab_clear(&self->slab);\
+    __##name##_slab_clear(&self->bindings);\
 }\
 \
 static inline void name##_free(name *self) {\
     assert(self != NULL);\
-    __##name##_slab_free(&self->slab);\
+    __##name##_slab_free(&self->bindings);\
 }
 
 /** Declares an event handler for the given function signature.  */
@@ -73,19 +91,19 @@ static inline void name##_free(name *self) {\
 \
 do {\
     assert((self) != NULL);\
-    assert((self)->slab.count <= (self)->slab.vector.count);\
-    assert((self)->slab.vector.array != NULL);\
-    size_t remaining = (self)->slab.count;\
+    assert((self)->bindings.count <= (self)->bindings.vector.count);\
+    assert((self)->bindings.vector.array != NULL);\
+    size_t remaining = (self)->bindings.count;\
     if (remaining == 0) {\
         break;\
     }\
-    for (size_t i = 0; i < (self)->slab.vector.count; ++i) {\
-        if ((self)->slab.vector.array[i].age == 0) {\
+    for (size_t i = 0; i < (self)->bindings.vector.count; ++i) {\
+        if ((self)->bindings.vector.array[i].age == 0) {\
             continue;\
         }\
-        assert((self)->slab.vector.array[i].data.target != NULL);\
-        assert((self)->slab.vector.array[i].data.func != NULL);\
-        (self)->slab.vector.array[i].data.func((self)->slab.vector.array[i].data.target, ##__VA_ARGS__);\
+        assert((self)->bindings.vector.array[i].data.target != NULL);\
+        assert((self)->bindings.vector.array[i].data.func != NULL);\
+        (self)->bindings.vector.array[i].data.func((self)->bindings.vector.array[i].data.target, ##__VA_ARGS__);\
         --remaining;\
         if (remaining == 0) {\
             break;\

@@ -8,10 +8,74 @@
 #include "std.h"
 
 /** Declares a named sorted set of the given type. */
-#define DECLARE_SET_NAMED(name, T, deleter, x_y_comparer)\
-// TODO
+#define DECLARE_SET_NAMED(name, T, x_y_comparer, x_y_equals, deleter)\
+\
+typedef struct __##name##_node {\
+    T data;\
+    struct __##name##_node *left;\
+    struct __##name##_node *right;\
+} __##name##_node;\
+\
+typedef struct {\
+    size_t count;\
+    __##name##_node *root;\
+} name;\
+\
+static inline name name##_new() {\
+}\
+\
+static inline name name##_copy(const name *set) {\
+}\
+\
+static inline size_t name##_count(const name *self) {\
+}\
+\
+static inline bool name##_empty(const name *self) {\
+}\
+\
+static inline const T *name##_find(const name *self, T data) {\
+}\
+\
+static inline const T *name##_left(const name *self) {\
+}\
+\
+static inline const T *name##_middle(const name *self) {\
+}\
+\
+static inline const T *name##_right(const name *self) {\
+}\
+\
+static inline bool name##_contains(const name *self, T data) {\
+}\
+\
+static inline bool name##_insert(name *self, T data) {\
+}\
+\
+static inline bool name##_erase(name *self, T data) {\
+}\
+\
+static inline bool name##_subset(const name *self, const name *set) {\
+}\
+\
+static inline name *name##_union(name *self, const name *set) {\
+}\
+\
+static inline name *name##_intersect(name *self, const name *set) {\
+}\
+\
+static inline name *name##_difference(name *self, const name *set) {\
+}\
+\
+static inline void name##_clear(name *self) {\
+}\
+\
+static inline void name##_foreach(const name *self, void(*action)(T)) {\
+}\
+\
+static inline void name##_free(name *self) {\
+}
 
 /** Declares a sorted set of the given type. */
-#define DECLARE_SET(T, deleter, comparer) DECLARE_SET_NAMED(T##_set, T, deleter, x_y_comparer)
+#define DECLARE_SET(T, x_y_comparer, x_y_equals, deleter) DECLARE_SET_NAMED(T##_set, T, x_y_comparer, x_y_equals, deleter)
 
 #endif // DS_SET_H

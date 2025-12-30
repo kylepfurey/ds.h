@@ -16,22 +16,13 @@
 #include <assert.h>
 
 /** A placeholder for trivially comparable values (greatest to smallest). */
-#define DEFAULT_COMPARE (x > y)
+#define DEFAULT_COMPARE x > y
 
-/** Compares values smallest to greatest. */
-#define REVERSE_COMPARE (y > x)
+/** Checks values for equality. */
+#define DEFAULT_EQUALS x == y
 
 /** A placeholder for a trivially hashable value. */
-#define DEFAULT_HASH (hashify(sizeof(key), key))
-
-/** Automatically hashes an integer. */
-#define INT_HASH (key)
-
-/** Automatically hashes a string. */
-#define STRING_HASH (hashify(strlen(key), key))
-
-/** An index indicating something was not found. */
-#define NOT_FOUND ((size_t) -1)
+#define DEFAULT_HASH hashify(sizeof(key), key)
 
 /** A placeholder for a no-op deleter function. */
 static inline void void_deleter(void *self) {
@@ -42,10 +33,10 @@ static inline void void_deleter(void *self) {
 static inline size_t hashify(size_t size, const void *data) {
     assert(data != NULL);
     // FNV-1a
-    const uint8_t *ptr = (uint8_t *) data;
+    const uint8_t *memory = (uint8_t *) data;
     size_t hash = 2166136261u; // FNV offset
     for (size_t i = 0; i < size; ++i) {
-        hash ^= ptr[i];
+        hash ^= memory[i];
         hash *= 16777619u; // FNV prime
     }
     return hash;

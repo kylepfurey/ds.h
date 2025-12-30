@@ -30,6 +30,14 @@ static inline name name##_new(size_t capacity) {\
     };\
 }\
 \
+static inline name name##_copy(const name *vector) {\
+    assert(vector != NULL);\
+    name self = name##_new(vector->capacity);\
+    self.count = vector->count;\
+    memcpy(self.array, vector->array, sizeof(T) * self.count);\
+    return self;\
+}\
+\
 static inline size_t name##_count(const name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
@@ -40,6 +48,12 @@ static inline size_t name##_capacity(const name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     return self->capacity;\
+}\
+\
+static inline bool name##_empty(const name *self) {\
+    assert(self != NULL);\
+    assert(self->count <= self->capacity);\
+    return self->count == 0;\
 }\
 \
 static inline T *name##_get(name *self, size_t index) {\
@@ -115,14 +129,17 @@ static inline void name##_pop(name *self) {\
     name##_erase(self, self->count - 1);\
 }\
 \
-static inline void name##_reverse(name *self) {\
+static inline T *name##_reverse(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     size_t count = self->count / 2;\
     for (size_t i = 0; i < count; ++i) {\
+        T temp = self->array[i];\
         self->array[i] = self->array[self->count - i - 1];\
+        self->array[self->count - i - 1] = temp;\
     }\
+    return self->array;\
 }\
 \
 static inline void name##_clear(name *self) {\
@@ -135,30 +152,53 @@ static inline void name##_clear(name *self) {\
     self->count = 0;\
 }\
 \
-static inline bool name##_foreach(name *self, bool(*action)(T *)) {\
+static inline T *name##_map(name *self, T(*transform)(T)) {\
     assert(self != NULL);\
-    assert(action != NULL);\
+    assert(transform != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     for (size_t i = 0; i < self->count; ++i) {\
-        if (!action(&self->array[i])) {\
-            return false;\
-        }\
+        self->array[i] = transform(self->array[i]);\
     }\
-    return true;\
+    return self->array;\
 }\
 \
-static inline bool name##_foreach_const(const name *self, bool(*action)(const T *)) {\
+static inline size_t name##_filter(name *self, bool(*predicate)(T)) {\
+    assert(self != NULL);\
+    assert(predicate != NULL);\
+    assert(self->count <= self->capacity);\
+    assert(self->array != NULL);\
+    size_t total = 0;\
+    for (size_t i = 0; i < self->count; ++i) {\
+        if (predicate(self->array[i])) {\
+            self->array[total++] = self->array[i];\
+        } else {\
+            deleter(&self->array[i]);\
+        }\
+    }\
+    self->count = total;\
+    return total;\
+}\
+\
+static inline T name##_reduce(name *self, T start, T(*accumulator)(T, T)) {\
+    assert(self != NULL);\
+    assert(accumulator != NULL);\
+    assert(self->count <= self->capacity);\
+    assert(self->array != NULL);\
+    for (size_t i = 0; i < self->count; ++i) {\
+        start = accumulator(start, self->array[i]);\
+    }\
+    return start;\
+}\
+\
+static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(self != NULL);\
     assert(action != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     for (size_t i = 0; i < self->count; ++i) {\
-        if (!action(&self->array[i])) {\
-            return false;\
-        }\
+        action(self->array[i]);\
     }\
-    return true;\
 }\
 \
 static inline void name##_free(name *self) {\

@@ -35,6 +35,11 @@ static inline size_t name##_count(const name *self) {\
     return self->count;\
 }\
 \
+static inline bool name##_empty(const name *self) {\
+    assert(self != NULL);\
+    return self->count == 0;\
+}\
+\
 static inline name##_node *name##_get(name *self, size_t index) {\
     assert(self != NULL);\
     assert(index < self->count);\
@@ -49,7 +54,7 @@ static inline name##_node *name##_get(name *self, size_t index) {\
     } else {\
         node = self->tail;\
         assert(node != NULL);\
-        for (size_t i = self->count - 1; i != index; --i) {\
+        for (ptrdiff_t i = self->count - 1; i != index; --i) {\
             node = node->previous;\
             assert(node != NULL);\
         }\
@@ -71,7 +76,7 @@ static inline const name##_node *name##_get_const(const name *self, size_t index
     } else {\
         node = self->tail;\
         assert(node != NULL);\
-        for (size_t i = self->count - 1; i != index; --i) {\
+        for (ptrdiff_t i = self->count - 1; i != index; --i) {\
             node = node->previous;\
             assert(node != NULL);\
         }\
@@ -180,6 +185,22 @@ static inline name##_node *name##_push_back(name *self, T data) {\
     return node;\
 }\
 \
+static inline name name##_copy(const name *list) {\
+    assert(list != NULL);\
+    name self = (name) {\
+        0,\
+        NULL,\
+        NULL,\
+    };\
+    const name##_node *current = list->head;\
+    while (current != NULL) {\
+        name##_push_back(&self, current->data);\
+        current = current->next;\
+    }\
+    assert(self.count == list->count);\
+    return self;\
+}\
+\
 static inline void name##_pop_front(name *self) {\
     assert(self != NULL);\
     assert(self->count > 0);\
@@ -230,30 +251,14 @@ static inline void name##_clear(name *self) {\
     self->tail = NULL;\
 }\
 \
-static inline bool name##_foreach(name *self, bool (*action)(T *)) {\
-    assert(self != NULL);\
-    assert(action != NULL);\
-    name##_node *current = self->head;\
-    while (current != NULL) {\
-        if (!action(&current->data)) {\
-            return false;\
-        }\
-        current = current->next;\
-    }\
-    return true;\
-}\
-\
-static inline bool name##_foreach_const(const name *self, bool (*action)(const T *)) {\
+static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(self != NULL);\
     assert(action != NULL);\
     const name##_node *current = self->head;\
     while (current != NULL) {\
-        if (!action(&current->data)) {\
-            return false;\
-        }\
+        action(current->data);\
         current = current->next;\
     }\
-    return true;\
 }\
 \
 static inline void name##_free(name *self) {\

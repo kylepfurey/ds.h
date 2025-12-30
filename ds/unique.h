@@ -5,7 +5,7 @@
 #ifndef DS_UNIQUE_H
 #define DS_UNIQUE_H
 
-#include "std.h"
+#include "def.h"
 
 /** Declares a named unique pointer for the given type. */
 #define DECLARE_UNIQUE_NAMED(name, T, deleter)\
@@ -15,7 +15,7 @@ typedef struct {\
 } name;\
 \
 static inline name name##_new(T data) {\
-    T *self = (T *) malloc(sizeof(T));\
+    T *self = (T *) ds_malloc(sizeof(T));\
     assert(self != NULL);\
     *self = data;\
     return (name) {\
@@ -24,7 +24,7 @@ static inline name name##_new(T data) {\
 }\
 \
 static inline name name##_copy(name *unique) {\
-    T *self = (T *) malloc(sizeof(T));\
+    T *self = (T *) ds_malloc(sizeof(T));\
     assert(self != NULL);\
     *self = *unique->data;\
     return (name) {\
@@ -51,11 +51,11 @@ static inline void name##_reset(name *self, T data) {\
     *self->data = data;\
 }\
 \
-static inline void name##_free(name *self) {\
+static inline void name##_delete(name *self) {\
     assert(self != NULL);\
     assert(self->data != NULL);\
     deleter(self->data);\
-    free(self->data);\
+    ds_free(self->data);\
     *self = (name) {0};\
 }
 

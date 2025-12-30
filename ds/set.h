@@ -5,20 +5,20 @@
 #ifndef DS_SET_H
 #define DS_SET_H
 
-#include "std.h"
+#include "def.h"
 
 /** Declares a named sorted set of the given type. */
 #define DECLARE_SET_NAMED(name, T, x_y_comparer, x_y_equals, deleter)\
 \
-typedef struct __##name##_node {\
+typedef struct ds_##name##_node {\
     T data;\
-    struct __##name##_node *left;\
-    struct __##name##_node *right;\
-} __##name##_node;\
+    struct ds_##name##_node *left;\
+    struct ds_##name##_node *right;\
+} ds_##name##_node;\
 \
 typedef struct {\
-    size_t count;\
-    __##name##_node *root;\
+    ds_size count;\
+    ds_##name##_node *root;\
 } name;\
 \
 static inline name name##_new() {\
@@ -28,7 +28,7 @@ static inline name name##_new() {\
     };\
 }\
 \
-static inline size_t name##_count(const name *self) {\
+static inline ds_size name##_count(const name *self) {\
     assert(self != NULL);\
     return self->count;\
 }\
@@ -80,7 +80,7 @@ static inline void name##_clear(name *self) {\
 static inline void name##_foreach(const name *self, void(*action)(T)) {\
 }\
 \
-static inline void name##_free(name *self) {\
+static inline void name##_delete(name *self) {\
 }
 
 /** Declares a sorted set of the given type. */

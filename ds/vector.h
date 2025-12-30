@@ -5,23 +5,20 @@
 #ifndef DS_VECTOR_H
 #define DS_VECTOR_H
 
-#include "std.h"
-
-/** The rate to expand vectors at. */
-#define VECTOR_EXPANSION 2
+#include "def.h"
 
 /** Declares a named dynamic array of the given type. */
 #define DECLARE_VECTOR_NAMED(name, T, deleter)\
 \
 typedef struct {\
-    size_t count;\
-    size_t capacity;\
+    ds_size count;\
+    ds_size capacity;\
     T *array;\
 } name;\
 \
-static inline name name##_new(size_t capacity) {\
+static inline name name##_new(ds_size capacity) {\
     assert(capacity > 0);\
-    T *array = (T *) malloc(sizeof(T) * capacity);\
+    T *array = (T *) ds_malloc(sizeof(T) * capacity);\
     assert(array != NULL);\
     return (name) {\
         0,\
@@ -38,13 +35,13 @@ static inline name name##_copy(const name *vector) {\
     return self;\
 }\
 \
-static inline size_t name##_count(const name *self) {\
+static inline ds_size name##_count(const name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     return self->count;\
 }\
 \
-static inline size_t name##_capacity(const name *self) {\
+static inline ds_size name##_capacity(const name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     return self->capacity;\
@@ -56,7 +53,7 @@ static inline bool name##_empty(const name *self) {\
     return self->count == 0;\
 }\
 \
-static inline T *name##_get(name *self, size_t index) {\
+static inline T *name##_get(name *self, ds_size index) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
@@ -64,7 +61,7 @@ static inline T *name##_get(name *self, size_t index) {\
     return self->array + index;\
 }\
 \
-static inline const T *name##_get_const(const name *self, size_t index) {\
+static inline const T *name##_get_const(const name *self, ds_size index) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
@@ -72,7 +69,7 @@ static inline const T *name##_get_const(const name *self, size_t index) {\
     return self->array + index;\
 }\
 \
-static inline void name##_resize(name *self, size_t capacity) {\
+static inline void name##_resize(name *self, ds_size capacity) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
@@ -81,18 +78,18 @@ static inline void name##_resize(name *self, size_t capacity) {\
         return;\
     }\
     if (capacity < self->count) {\
-        for (size_t i = capacity; i < self->count; ++i) {\
+        for (ds_size i = capacity; i < self->count; ++i) {\
             deleter(self->array + i);\
         }\
         self->count = capacity;\
     }\
     self->capacity = capacity;\
-    T *array = (T *) realloc(self->array, sizeof(T) * capacity);\
+    T *array = (T *) ds_realloc(self->array, sizeof(T) * capacity);\
     assert(array != NULL);\
     self->array = array;\
 }\
 \
-static inline void name##_insert(name *self, size_t index, T data) {\
+static inline void name##_insert(name *self, ds_size index, T data) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
@@ -106,7 +103,7 @@ static inline void name##_insert(name *self, size_t index, T data) {\
     self->array[index] = data;\
 }\
 \
-static inline void name##_erase(name *self, size_t index) {\
+static inline void name##_erase(name *self, ds_size index) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
@@ -133,8 +130,8 @@ static inline T *name##_reverse(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    size_t count = self->count / 2;\
-    for (size_t i = 0; i < count; ++i) {\
+    ds_size count = self->count / 2;\
+    for (ds_size i = 0; i < count; ++i) {\
         T temp = self->array[i];\
         self->array[i] = self->array[self->count - i - 1];\
         self->array[self->count - i - 1] = temp;\
@@ -146,7 +143,7 @@ static inline void name##_clear(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    for (size_t i = 0; i < self->count; ++i) {\
+    for (ds_size i = 0; i < self->count; ++i) {\
         deleter(self->array + i);\
     }\
     self->count = 0;\
@@ -157,19 +154,19 @@ static inline T *name##_map(name *self, T(*transform)(T)) {\
     assert(transform != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    for (size_t i = 0; i < self->count; ++i) {\
+    for (ds_size i = 0; i < self->count; ++i) {\
         self->array[i] = transform(self->array[i]);\
     }\
     return self->array;\
 }\
 \
-static inline size_t name##_filter(name *self, bool(*predicate)(T)) {\
+static inline ds_size name##_filter(name *self, bool(*predicate)(T)) {\
     assert(self != NULL);\
     assert(predicate != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    size_t total = 0;\
-    for (size_t i = 0; i < self->count; ++i) {\
+    ds_size total = 0;\
+    for (ds_size i = 0; i < self->count; ++i) {\
         if (predicate(self->array[i])) {\
             self->array[total++] = self->array[i];\
         } else {\
@@ -185,7 +182,7 @@ static inline T name##_reduce(name *self, T start, T(*accumulator)(T, T)) {\
     assert(accumulator != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    for (size_t i = 0; i < self->count; ++i) {\
+    for (ds_size i = 0; i < self->count; ++i) {\
         start = accumulator(start, self->array[i]);\
     }\
     return start;\
@@ -196,17 +193,17 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(action != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
-    for (size_t i = 0; i < self->count; ++i) {\
+    for (ds_size i = 0; i < self->count; ++i) {\
         action(self->array[i]);\
     }\
 }\
 \
-static inline void name##_free(name *self) {\
+static inline void name##_delete(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
     assert(self->array != NULL);\
     name##_clear(self);\
-    free(self->array);\
+    ds_free(self->array);\
     *self = (name) {0};\
 }
 

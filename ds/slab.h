@@ -11,24 +11,24 @@
 #define DECLARE_SLAB_NAMED(name, T, deleter)\
 \
 typedef struct {\
-    unsigned int index;\
-    unsigned int age;\
+    ds_uint index;\
+    ds_uint age;\
 } name##_id;\
 \
 typedef struct {\
-    unsigned int age;\
     T data;\
-} __##name##_block;\
+    ds_uint age;\
+} ds_##name##_block;\
 \
-DECLARE_VECTOR_NAMED(__##name##_vector, __##name##_block, void_deleter)\
+DECLARE_VECTOR_NAMED(ds_##name##_vector, ds_##name##_block, void_deleter)\
 \
 typedef struct {\
-    size_t count;\
+    ds_size count;\
     name##_id next;\
-    __##name##_vector buckets;\
+    ds_##name##_vector buckets;\
 } name;\
 \
-static inline name name##_new(size_t capacity) {\
+static inline name name##_new(ds_size capacity) {\
     assert(capacity > 0);\
     return (name) {\
         0,\
@@ -36,7 +36,7 @@ static inline name name##_new(size_t capacity) {\
             0,\
             1,\
         },\
-        __##name##_vector_new(capacity),\
+        ds_##name##_vector_new(capacity),\
     };\
 }\
 \
@@ -45,11 +45,11 @@ static inline name name##_copy(const name *slab) {\
     return (name) {\
         slab->count,\
         slab->next,\
-        __##name##_vector_copy(&slab->buckets),\
+        ds_##name##_vector_copy(&slab->buckets),\
     };\
 }\
 \
-static inline size_t name##_count(const name *self) {\
+static inline ds_size name##_count(const name *self) {\
     assert(self != NULL);\
     return self->count;\
 }\
@@ -61,20 +61,20 @@ static inline bool name##_empty(const name *self) {\
 \
 static inline bool name##_valid(const name *self, name##_id id) {\
     assert(self != NULL);\
-    const __##name##_vector *vector = &self->buckets;\
+    const ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     if (self->count == 0 || id.index >= vector->count) {\
         return false;\
     }\
-    unsigned int age = vector->array[id.index].age;\
+    ds_uint age = vector->array[id.index].age;\
     return age != 0 && age == id.age;\
 }\
 \
 static inline T *name##_get(name *self, name##_id id) {\
     assert(self != NULL);\
     assert(name##_valid(self, id));\
-    __##name##_vector *vector = &self->buckets;\
+    ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -84,7 +84,7 @@ static inline T *name##_get(name *self, name##_id id) {\
 static inline const T *name##_get_const(const name *self, name##_id id) {\
     assert(self != NULL);\
     assert(name##_valid(self, id));\
-    const __##name##_vector *vector = &self->buckets;\
+    const ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -93,23 +93,23 @@ static inline const T *name##_get_const(const name *self, name##_id id) {\
 \
 static inline name##_id name##_borrow(name *self, T data) {\
     assert(self != NULL);\
-    __##name##_vector *vector = &self->buckets;\
+    ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     name##_id id = self->next;\
     if (id.index == vector->count) {\
-        __##name##_vector_push(\
+        ds_##name##_vector_push(\
             vector,\
-            (__##name##_block) {\
-                id.age,\
+            (ds_##name##_block) {\
                 data,\
+                id.age,\
             }\
         );\
         assert(self->count < vector->count);\
         ++self->next.index;\
     } else {\
-        vector->array[id.index].age = id.age;\
         vector->array[id.index].data = data;\
+        vector->array[id.index].age = id.age;\
         do {\
             ++self->next.index;\
         } while (self->next.index < vector->count &&\
@@ -125,7 +125,7 @@ static inline void name##_return(name *self, name##_id id) {\
     assert(self != NULL);\
     assert(self->count > 0);\
     assert(name##_valid(self, id));\
-    __##name##_vector *vector = &self->buckets;\
+    ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     assert(id.index < vector->count);\
@@ -139,13 +139,13 @@ static inline void name##_return(name *self, name##_id id) {\
 \
 static inline void name##_clear(name *self) {\
     assert(self != NULL);\
-    __##name##_vector *vector = &self->buckets;\
+    ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
     if (self->count == 0) {\
         return;\
     }\
-    for (size_t i = 0; i < vector->count; ++i) {\
+    for (ds_size i = 0; i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
             continue;\
         }\
@@ -166,11 +166,11 @@ static inline void name##_clear(name *self) {\
 static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(self != NULL);\
     assert(action != NULL);\
-    const __##name##_vector *vector = &self->buckets;\
+    const ds_##name##_vector *vector = &self->buckets;\
     assert(self->count <= vector->count);\
     assert(vector->array != NULL);\
-    size_t remaining = self->count;\
-    for (size_t i = 0; remaining > 0 && i < vector->count; ++i) {\
+    ds_size remaining = self->count;\
+    for (ds_size i = 0; remaining > 0 && i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
             continue;\
         }\
@@ -180,10 +180,10 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     assert(remaining == 0);\
 }\
 \
-static inline void name##_free(name *self) {\
+static inline void name##_delete(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
-    __##name##_vector_free(&self->buckets);\
+    ds_##name##_vector_delete(&self->buckets);\
     *self = (name) {0};\
 }
 

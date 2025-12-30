@@ -5,7 +5,7 @@
 #ifndef DS_LIST_H
 #define DS_LIST_H
 
-#include "std.h"
+#include "def.h"
 
 /** Declares a named doubly linked list of the given type. */
 #define DECLARE_LIST_NAMED(name, T, deleter)\
@@ -17,7 +17,7 @@ typedef struct name##_node {\
 } name##_node;\
 \
 typedef struct {\
-    size_t count;\
+    ds_size count;\
     struct name##_node *head;\
     struct name##_node *tail;\
 } name;\
@@ -30,7 +30,7 @@ static inline name name##_new() {\
     };\
 }\
 \
-static inline size_t name##_count(const name *self) {\
+static inline ds_size name##_count(const name *self) {\
     assert(self != NULL);\
     return self->count;\
 }\
@@ -40,14 +40,14 @@ static inline bool name##_empty(const name *self) {\
     return self->count == 0;\
 }\
 \
-static inline name##_node *name##_get(name *self, size_t index) {\
+static inline name##_node *name##_get(name *self, ds_size index) {\
     assert(self != NULL);\
     assert(index < self->count);\
     name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
         assert(node != NULL);\
-        for (size_t i = 0; i != index; ++i) {\
+        for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
             assert(node != NULL);\
         }\
@@ -62,14 +62,14 @@ static inline name##_node *name##_get(name *self, size_t index) {\
     return node;\
 }\
 \
-static inline const name##_node *name##_get_const(const name *self, size_t index) {\
+static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
     assert(self != NULL);\
     assert(index < self->count);\
     const name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
         assert(node != NULL);\
-        for (size_t i = 0; i != index; ++i) {\
+        for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
             assert(node != NULL);\
         }\
@@ -89,7 +89,7 @@ static inline name##_node *name##_insert_before(name *self, name##_node *node, T
     assert(node != NULL);\
     assert(self->count > 0);\
     ++self->count;\
-    name##_node *new_node = (name##_node *) malloc(sizeof(name##_node));\
+    name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
     assert(new_node != NULL);\
     new_node->data = data;\
     new_node->next = node;\
@@ -109,7 +109,7 @@ static inline name##_node *name##_insert_after(name *self, name##_node *node, T 
     assert(node != NULL);\
     assert(self->count > 0);\
     ++self->count;\
-    name##_node *new_node = (name##_node *) malloc(sizeof(name##_node));\
+    name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
     assert(new_node != NULL);\
     new_node->data = data;\
     new_node->previous = node;\
@@ -142,13 +142,13 @@ static inline void name##_erase(name *self, name##_node *node) {\
         node->next->previous = node->previous;\
     }\
     deleter(&node->data);\
-    free(node);\
+    ds_free(node);\
 }\
 \
 static inline name##_node *name##_push_front(name *self, T data) {\
     assert(self != NULL);\
     ++self->count;\
-    name##_node *node = (name##_node *) malloc(sizeof(name##_node));\
+    name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
     assert(node != NULL);\
     node->data = data;\
     node->previous = NULL;\
@@ -168,7 +168,7 @@ static inline name##_node *name##_push_front(name *self, T data) {\
 static inline name##_node *name##_push_back(name *self, T data) {\
     assert(self != NULL);\
     ++self->count;\
-    name##_node *node = (name##_node *) malloc(sizeof(name##_node));\
+    name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
     assert(node != NULL);\
     node->data = data;\
     node->next = NULL;\
@@ -213,7 +213,7 @@ static inline void name##_pop_front(name *self) {\
         assert(self->count == 0);\
     }\
     deleter(&node->data);\
-    free(node);\
+    ds_free(node);\
     if (self->head != NULL) {\
         self->head->previous = NULL;\
     }\
@@ -231,7 +231,7 @@ static inline void name##_pop_back(name *self) {\
         assert(self->count == 0);\
     }\
     deleter(&node->data);\
-    free(node);\
+    ds_free(node);\
     if (self->tail != NULL) {\
         self->tail->next = NULL;\
     }\
@@ -243,7 +243,7 @@ static inline void name##_clear(name *self) {\
     while (current != NULL) {\
         name##_node *next = current->next;\
         deleter(&current->data);\
-        free(current);\
+        ds_free(current);\
         current = next;\
     }\
     self->count = 0;\
@@ -261,7 +261,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     }\
 }\
 \
-static inline void name##_free(name *self) {\
+static inline void name##_delete(name *self) {\
     assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\

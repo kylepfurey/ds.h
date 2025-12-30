@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 99)
 
 add_executable(ds
         ds/std.h
+        ds/def.h
         ds/vector.h
         ds/string.h
         ds/list.h

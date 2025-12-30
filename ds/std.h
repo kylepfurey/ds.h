@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 #include <math.h>
 #include <assert.h>
 
@@ -28,6 +29,9 @@
 
 /** Automatically hashes a string. */
 #define STRING_HASH (hashify(strlen(key), key))
+
+/** An index indicating something was not found. */
+#define NOT_FOUND ((size_t) -1)
 
 /** A placeholder for a no-op deleter function. */
 static inline void void_deleter(void *self) {

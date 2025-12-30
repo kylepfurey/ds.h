@@ -35,11 +35,6 @@ static inline size_t name##_count(const name *self) {\
     return self->count;\
 }\
 \
-static inline bool name##_valid(const name *self, size_t index) {\
-    assert(self != NULL);\
-    return index < self->count;\
-}\
-\
 static inline name##_node *name##_get(name *self, size_t index) {\
     assert(self != NULL);\
     assert(index < self->count);\

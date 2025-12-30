@@ -32,17 +32,14 @@ static inline name name##_new(size_t capacity) {\
 \
 static inline size_t name##_count(const name *self) {\
     assert(self != NULL);\
+    assert(self->count <= self->capacity);\
     return self->count;\
 }\
 \
 static inline size_t name##_capacity(const name *self) {\
     assert(self != NULL);\
+    assert(self->count <= self->capacity);\
     return self->capacity;\
-}\
-\
-static inline bool name##_valid(const name *self, size_t index) {\
-    assert(self != NULL);\
-    return index < self->count;\
 }\
 \
 static inline T *name##_get(name *self, size_t index) {\
@@ -108,16 +105,24 @@ static inline void name##_erase(name *self, size_t index) {\
 static inline void name##_push(name *self, T data) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
-    assert(self->array != NULL);\
     name##_insert(self, self->count, data);\
 }\
 \
 static inline void name##_pop(name *self) {\
     assert(self != NULL);\
     assert(self->count <= self->capacity);\
-    assert(self->array != NULL);\
     assert(self->count > 0);\
     name##_erase(self, self->count - 1);\
+}\
+\
+static inline void name##_reverse(name *self) {\
+    assert(self != NULL);\
+    assert(self->count <= self->capacity);\
+    assert(self->array != NULL);\
+    size_t count = self->count / 2;\
+    for (size_t i = 0; i < count; ++i) {\
+        self->array[i] = self->array[self->count - i - 1];\
+    }\
 }\
 \
 static inline void name##_clear(name *self) {\

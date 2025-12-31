@@ -2,10 +2,14 @@
 // Generic Block Allocator Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_ALLOCATOR_H
 #define DS_ALLOCATOR_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named block allocator with the given alignment. */
 #define DECLARE_ALLOCATOR_NAMED(name, alignment)\

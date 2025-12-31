@@ -2,10 +2,14 @@
 // Generic Unique Reference Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_UNIQUE_H
 #define DS_UNIQUE_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named unique pointer for the given type. */
 #define DECLARE_UNIQUE_NAMED(name, T, deleter)\

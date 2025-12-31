@@ -4,20 +4,20 @@ project(ds C)
 set(CMAKE_C_STANDARD 99)
 
 add_executable(ds
-        ds/std.h
-        ds/def.h
-        ds/allocator.h
-        ds/vector.h
-        ds/string.h
-        ds/list.h
-        ds/queue.h
-        ds/set.h
-        ds/map.h
-        ds/unique.h
-        ds/shared.h
-        ds/weak.h
-        ds/slab.h
-        ds/signal.h
+        ds/ds_std.h
+        ds/ds_def.h
+        ds/ds_allocator.h
+        ds/ds_vector.h
+        ds/ds_string.h
+        ds/ds_list.h
+        ds/ds_queue.h
+        ds/ds_set.h
+        ds/ds_map.h
+        ds/ds_unique.h
+        ds/ds_shared.h
+        ds/ds_weak.h
+        ds/ds_slab.h
+        ds/ds_signal.h
         ds.h
         main.c
 )

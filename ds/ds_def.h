@@ -2,10 +2,14 @@
 // Data Structure Declarations
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_DEF_H
 #define DS_DEF_H
 
-#include "std.h"
+#include "ds_std.h"
 
 /** Asserts used in data structures. */
 #ifdef NDEBUG

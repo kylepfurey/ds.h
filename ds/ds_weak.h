@@ -2,10 +2,14 @@
 // Generic Weak Reference Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_WEAK_H
 #define DS_WEAK_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named weak pointer for the given type. */
 #define DECLARE_WEAK_NAMED(name, shared_name)\

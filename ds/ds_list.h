@@ -2,10 +2,14 @@
 // Generic Doubly Linked List Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_LIST_H
 #define DS_LIST_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named doubly linked list of the given type. */
 #define DECLARE_LIST_NAMED(name, T, deleter)\

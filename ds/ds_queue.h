@@ -2,10 +2,14 @@
 // Generic Priority Queue Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_QUEUE_H
 #define DS_QUEUE_H
 
-#include "list.h"
+#include "ds_list.h"
 
 /** Declares a named priority queue of the given types. */
 #define DECLARE_QUEUE_NAMED(name, T, P, x_y_comparer, deleter)\

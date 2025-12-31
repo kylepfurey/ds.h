@@ -2,10 +2,14 @@
 // Generic Mutable String Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_STRING_H
 #define DS_STRING_H
 
-#include "vector.h"
+#include "ds_vector.h"
 
 /** Declares a named mutable string of the given type. */
 #define DECLARE_STRING_NAMED(name, T)\

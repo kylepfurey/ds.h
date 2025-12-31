@@ -2,10 +2,14 @@
 // Generic Event Handler Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_SIGNAL_H
 #define DS_SIGNAL_H
 
-#include "slab.h"
+#include "ds_slab.h"
 
 /** Declares a named event handler for the given function signature. */
 #define DECLARE_SIGNAL_NAMED(name, T, R, ...)\

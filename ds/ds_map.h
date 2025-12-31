@@ -2,10 +2,14 @@
 // Generic Hash Map Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_MAP_H
 #define DS_MAP_H
 
-#include "vector.h"
+#include "ds_vector.h"
 
 /** Declares a named hash map of the given types. */
 #define DECLARE_MAP_NAMED(name, K, V, key_hasher, x_y_equals, value_deleter)\

@@ -2,10 +2,14 @@
 // Generic Shared Reference Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_SHARED_H
 #define DS_SHARED_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named shared pointer for the given type. */
 #define DECLARE_SHARED_NAMED(name, T, deleter)\

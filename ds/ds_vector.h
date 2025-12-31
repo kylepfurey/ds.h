@@ -2,10 +2,14 @@
 // Generic Dynamic Array Data Structure
 // by Kyle Furey
 
+/**
+ *
+ */
+
 #ifndef DS_VECTOR_H
 #define DS_VECTOR_H
 
-#include "def.h"
+#include "ds_def.h"
 
 /** Declares a named dynamic array of the given type. */
 #define DECLARE_VECTOR_NAMED(name, T, deleter)\

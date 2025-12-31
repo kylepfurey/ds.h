@@ -31,66 +31,66 @@ static inline name name##_new() {\
 }\
 \
 static inline ds_size name##_count(const name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     return self->count;\
 }\
 \
 static inline bool name##_empty(const name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
 static inline name##_node *name##_get(name *self, ds_size index) {\
-    assert(self != NULL);\
-    assert(index < self->count);\
+    ds_assert(self != NULL);\
+    ds_assert(index < self->count);\
     name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
-        assert(node != NULL);\
+        ds_assert(node != NULL);\
         for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
-            assert(node != NULL);\
+            ds_assert(node != NULL);\
         }\
     } else {\
         node = self->tail;\
-        assert(node != NULL);\
+        ds_assert(node != NULL);\
         for (ptrdiff_t i = self->count - 1; i != index; --i) {\
             node = node->previous;\
-            assert(node != NULL);\
+            ds_assert(node != NULL);\
         }\
     }\
     return node;\
 }\
 \
 static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
-    assert(self != NULL);\
-    assert(index < self->count);\
+    ds_assert(self != NULL);\
+    ds_assert(index < self->count);\
     const name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
-        assert(node != NULL);\
+        ds_assert(node != NULL);\
         for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
-            assert(node != NULL);\
+            ds_assert(node != NULL);\
         }\
     } else {\
         node = self->tail;\
-        assert(node != NULL);\
+        ds_assert(node != NULL);\
         for (ptrdiff_t i = self->count - 1; i != index; --i) {\
             node = node->previous;\
-            assert(node != NULL);\
+            ds_assert(node != NULL);\
         }\
     }\
     return node;\
 }\
 \
 static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
-    assert(self != NULL);\
-    assert(node != NULL);\
-    assert(self->count > 0);\
+    ds_assert(self != NULL);\
+    ds_assert(node != NULL);\
+    ds_assert(self->count > 0);\
     ++self->count;\
     name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    assert(new_node != NULL);\
+    ds_assert(new_node != NULL);\
     new_node->data = data;\
     new_node->next = node;\
     new_node->previous = node->previous;\
@@ -105,12 +105,12 @@ static inline name##_node *name##_insert_before(name *self, name##_node *node, T
 }\
 \
 static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
-    assert(self != NULL);\
-    assert(node != NULL);\
-    assert(self->count > 0);\
+    ds_assert(self != NULL);\
+    ds_assert(node != NULL);\
+    ds_assert(self->count > 0);\
     ++self->count;\
     name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    assert(new_node != NULL);\
+    ds_assert(new_node != NULL);\
     new_node->data = data;\
     new_node->previous = node;\
     new_node->next = node->next;\
@@ -125,9 +125,9 @@ static inline name##_node *name##_insert_after(name *self, name##_node *node, T 
 }\
 \
 static inline void name##_erase(name *self, name##_node *node) {\
-    assert(self != NULL);\
-    assert(node != NULL);\
-    assert(self->count > 0);\
+    ds_assert(self != NULL);\
+    ds_assert(node != NULL);\
+    ds_assert(self->count > 0);\
     --self->count;\
     if (self->head == node) {\
         self->head = node->next;\
@@ -146,18 +146,18 @@ static inline void name##_erase(name *self, name##_node *node) {\
 }\
 \
 static inline name##_node *name##_push_front(name *self, T data) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    assert(node != NULL);\
+    ds_assert(node != NULL);\
     node->data = data;\
     node->previous = NULL;\
     if (self->head == NULL) {\
-        assert(self->tail == NULL);\
+        ds_assert(self->tail == NULL);\
         node->next = NULL;\
         self->tail = node;\
     } else {\
-        assert(self->tail != NULL);\
+        ds_assert(self->tail != NULL);\
         node->next = self->head;\
         self->head->previous = node;\
     }\
@@ -166,18 +166,18 @@ static inline name##_node *name##_push_front(name *self, T data) {\
 }\
 \
 static inline name##_node *name##_push_back(name *self, T data) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    assert(node != NULL);\
+    ds_assert(node != NULL);\
     node->data = data;\
     node->next = NULL;\
     if (self->tail == NULL) {\
-        assert(self->head == NULL);\
+        ds_assert(self->head == NULL);\
         node->previous = NULL;\
         self->head = node;\
     } else {\
-        assert(self->head != NULL);\
+        ds_assert(self->head != NULL);\
         node->previous = self->tail;\
         self->tail->next = node;\
     }\
@@ -186,7 +186,7 @@ static inline name##_node *name##_push_back(name *self, T data) {\
 }\
 \
 static inline name name##_copy(const name *list) {\
-    assert(list != NULL);\
+    ds_assert(list != NULL);\
     name self = (name) {\
         0,\
         NULL,\
@@ -197,20 +197,20 @@ static inline name name##_copy(const name *list) {\
         name##_push_back(&self, current->data);\
         current = current->next;\
     }\
-    assert(self.count == list->count);\
+    ds_assert(self.count == list->count);\
     return self;\
 }\
 \
 static inline void name##_pop_front(name *self) {\
-    assert(self != NULL);\
-    assert(self->count > 0);\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
     --self->count;\
     name##_node *node = self->head;\
-    assert(node != NULL);\
+    ds_assert(node != NULL);\
     self->head = node->next;\
     if (self->head == NULL) {\
         self->tail = NULL;\
-        assert(self->count == 0);\
+        ds_assert(self->count == 0);\
     }\
     deleter(&node->data);\
     ds_free(node);\
@@ -220,15 +220,15 @@ static inline void name##_pop_front(name *self) {\
 }\
 \
 static inline void name##_pop_back(name *self) {\
-    assert(self != NULL);\
-    assert(self->count > 0);\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
     --self->count;\
     name##_node *node = self->tail;\
-    assert(node != NULL);\
+    ds_assert(node != NULL);\
     self->tail = node->previous;\
     if (self->tail == NULL) {\
         self->head = NULL;\
-        assert(self->count == 0);\
+        ds_assert(self->count == 0);\
     }\
     deleter(&node->data);\
     ds_free(node);\
@@ -238,7 +238,7 @@ static inline void name##_pop_back(name *self) {\
 }\
 \
 static inline void name##_clear(name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     name##_node *current = self->head;\
     while (current != NULL) {\
         name##_node *next = current->next;\
@@ -252,8 +252,8 @@ static inline void name##_clear(name *self) {\
 }\
 \
 static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    assert(self != NULL);\
-    assert(action != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(action != NULL);\
     const name##_node *current = self->head;\
     while (current != NULL) {\
         action(current->data);\
@@ -262,7 +262,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
 }\
 \
 static inline void name##_delete(name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\
 }

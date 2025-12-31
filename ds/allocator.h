@@ -10,30 +10,30 @@
 /** Declares a named block allocator with the given alignment. */
 #define DECLARE_ALLOCATOR_NAMED(name, alignment)\
 \
-typedef struct ds_##name##_block {\
+typedef struct ds__##name##_block {\
     ds_size size;\
-    struct ds_##name##_block *next;\
-} ds_##name##_block;\
+    struct ds__##name##_block *next;\
+} ds__##name##_block;\
 \
 enum {\
-    ds_##name##_block_SIZE = ALLOCATOR_ALIGN(sizeof(ds_##name##_block), alignment),\
+    ds__##name##_block_SIZE = ALLOCATOR_ALIGN(sizeof(ds__##name##_block), alignment),\
 };\
 \
 typedef struct {\
     void *start;\
     void *end;\
-    ds_##name##_block *free;\
+    ds__##name##_block *free;\
 } name;\
 \
 static inline name name##_new(ds_size size) {\
-    assert(size >= ds_##name##_block_SIZE + (alignment));\
+    ds_assert(size >= ds__##name##_block_SIZE + (alignment));\
     size = ALLOCATOR_ALIGN(size, (alignment));\
     void *start = ds_malloc(size);\
-    assert(start != NULL);\
+    ds_assert(start != NULL);\
     name self = (name) {\
         start,\
         (ds_byte *) start + size,\
-        (ds_##name##_block *) start,\
+        (ds__##name##_block *) start,\
     };\
     self.free->size = size;\
     self.free->next = NULL;\
@@ -41,23 +41,23 @@ static inline name name##_new(ds_size size) {\
 }\
 \
 static inline void *name##_malloc(name *self, ds_size size) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     if (size == 0) {\
         return NULL;\
     }\
     size = ALLOCATOR_ALIGN(size, (alignment));\
-    ds_##name##_block **previous = &self->free;\
-    ds_##name##_block *current = self->free;\
+    ds__##name##_block **previous = &self->free;\
+    ds__##name##_block *current = self->free;\
     while (current != NULL) {\
-        if (current->size >= ds_##name##_block_SIZE + size) {\
-            ds_##name##_block *block = (ds_##name##_block *)\
-                ((ds_byte *) current + size + ds_##name##_block_SIZE);\
-            block->size = current->size - size - ds_##name##_block_SIZE;\
+        if (current->size >= ds__##name##_block_SIZE + size) {\
+            ds__##name##_block *block = (ds__##name##_block *)\
+                ((ds_byte *) current + size + ds__##name##_block_SIZE);\
+            block->size = current->size - size - ds__##name##_block_SIZE;\
             block->next = current->next;\
             *previous = block;\
             current->size = size;\
             current->next = NULL;\
-            return (ds_byte *) current + ds_##name##_block_SIZE;\
+            return (ds_byte *) current + ds__##name##_block_SIZE;\
         }\
         previous = &current->next;\
         current = current->next;\
@@ -66,15 +66,15 @@ static inline void *name##_malloc(name *self, ds_size size) {\
 }\
 \
 static inline void name##_free(name *self, void *ptr) {\
-    assert(self != NULL);\
-    assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
+    ds_assert(self != NULL);\
+    ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
         return;\
     }\
-    ds_##name##_block* block = (ds_##name##_block *)\
-        ((ds_byte *) ptr - ds_##name##_block_SIZE);\
-    ds_##name##_block *previous = NULL;\
-    ds_##name##_block *current = self->free;\
+    ds__##name##_block* block = (ds__##name##_block *)\
+        ((ds_byte *) ptr - ds__##name##_block_SIZE);\
+    ds__##name##_block *previous = NULL;\
+    ds__##name##_block *current = self->free;\
     while (current != NULL && current < block) {\
         previous = current;\
         current = current->next;\
@@ -85,19 +85,19 @@ static inline void name##_free(name *self, void *ptr) {\
     } else {\
         self->free = block;\
     }\
-    if (current != NULL && (ds_byte *) block + block->size + ds_##name##_block_SIZE == (ds_byte *) current) {\
-        block->size += ds_##name##_block_SIZE + current->size;\
+    if (current != NULL && (ds_byte *) block + block->size + ds__##name##_block_SIZE == (ds_byte *) current) {\
+        block->size += ds__##name##_block_SIZE + current->size;\
         block->next = current->next;\
     }\
-    if (previous != NULL && (ds_byte *) previous + previous->size + ds_##name##_block_SIZE == (ds_byte *) block) {\
-        previous->size += block->size + ds_##name##_block_SIZE;\
+    if (previous != NULL && (ds_byte *) previous + previous->size + ds__##name##_block_SIZE == (ds_byte *) block) {\
+        previous->size += block->size + ds__##name##_block_SIZE;\
         previous->next = block->next;\
     }\
 }\
 \
 static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
-    assert(self != NULL);\
-    assert(size == 0 || count <= SIZE_MAX / size);\
+    ds_assert(self != NULL);\
+    ds_assert(size == 0 || count <= SIZE_MAX / size);\
     ds_size total = count * size;\
     void *ptr = name##_malloc(self, total);\
     if (ptr != NULL) {\
@@ -107,8 +107,8 @@ static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
 }\
 \
 static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
-    assert(self != NULL);\
-    assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
+    ds_assert(self != NULL);\
+    ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
         return name##_malloc(self, size);\
     }\
@@ -116,8 +116,8 @@ static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
         name##_free(self, ptr);\
         return NULL; \
     }\
-    ds_##name##_block* block = (ds_##name##_block *)\
-        ((ds_byte *) ptr - ds_##name##_block_SIZE);\
+    ds__##name##_block* block = (ds__##name##_block *)\
+        ((ds_byte *) ptr - ds__##name##_block_SIZE);\
     if (block->size >= size) {\
         return ptr;\
     }\
@@ -131,10 +131,10 @@ static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
 }\
 \
 static inline void name##_delete(name *self) {\
-    assert(self != NULL);\
-    assert(self->start != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(self->start != NULL);\
     if (ALLOCATOR_LEAK_ASSERT) {\
-        assert(\
+        ds_assert(\
             self->free != NULL &&\
             self->free->next == NULL &&\
             (void *) self->free == self->start &&\

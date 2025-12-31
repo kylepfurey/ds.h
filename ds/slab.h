@@ -18,52 +18,52 @@ typedef struct {\
 typedef struct {\
     T data;\
     ds_uint age;\
-} ds_##name##_block;\
+} ds__##name##_block;\
 \
-DECLARE_VECTOR_NAMED(ds_##name##_vector, ds_##name##_block, void_deleter)\
+DECLARE_VECTOR_NAMED(ds__##name##_vector, ds__##name##_block, void_deleter)\
 \
 typedef struct {\
     ds_size count;\
     name##_id next;\
-    ds_##name##_vector buckets;\
+    ds__##name##_vector buckets;\
 } name;\
 \
 static inline name name##_new(ds_size capacity) {\
-    assert(capacity > 0);\
+    ds_assert(capacity > 0);\
     return (name) {\
         0,\
         (name##_id) {\
             0,\
             1,\
         },\
-        ds_##name##_vector_new(capacity),\
+        ds__##name##_vector_new(capacity),\
     };\
 }\
 \
 static inline name name##_copy(const name *slab) {\
-    assert(slab != NULL);\
+    ds_assert(slab != NULL);\
     return (name) {\
         slab->count,\
         slab->next,\
-        ds_##name##_vector_copy(&slab->buckets),\
+        ds__##name##_vector_copy(&slab->buckets),\
     };\
 }\
 \
 static inline ds_size name##_count(const name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     return self->count;\
 }\
 \
 static inline bool name##_empty(const name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
 static inline bool name##_valid(const name *self, name##_id id) {\
-    assert(self != NULL);\
-    const ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
+    ds_assert(self != NULL);\
+    const ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
     if (self->count == 0 || id.index >= vector->count) {\
         return false;\
     }\
@@ -72,40 +72,40 @@ static inline bool name##_valid(const name *self, name##_id id) {\
 }\
 \
 static inline T *name##_get(name *self, name##_id id) {\
-    assert(self != NULL);\
-    assert(name##_valid(self, id));\
-    ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
-    assert(id.index < vector->count);\
+    ds_assert(self != NULL);\
+    ds_assert(name##_valid(self, id));\
+    ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
+    ds_assert(id.index < vector->count);\
     return &vector->array[id.index].data;\
 }\
 \
 static inline const T *name##_get_const(const name *self, name##_id id) {\
-    assert(self != NULL);\
-    assert(name##_valid(self, id));\
-    const ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
-    assert(id.index < vector->count);\
+    ds_assert(self != NULL);\
+    ds_assert(name##_valid(self, id));\
+    const ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
+    ds_assert(id.index < vector->count);\
     return &vector->array[id.index].data;\
 }\
 \
 static inline name##_id name##_borrow(name *self, T data) {\
-    assert(self != NULL);\
-    ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
+    ds_assert(self != NULL);\
+    ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
     name##_id id = self->next;\
     if (id.index == vector->count) {\
-        ds_##name##_vector_push(\
+        ds__##name##_vector_push(\
             vector,\
-            (ds_##name##_block) {\
+            (ds__##name##_block) {\
                 data,\
                 id.age,\
             }\
         );\
-        assert(self->count < vector->count);\
+        ds_assert(self->count < vector->count);\
         ++self->next.index;\
     } else {\
         vector->array[id.index].data = data;\
@@ -117,18 +117,18 @@ static inline name##_id name##_borrow(name *self, T data) {\
     }\
     ++self->count;\
     ++self->next.age;\
-    assert(self->next.age > 0);\
+    ds_assert(self->next.age > 0);\
     return id;\
 }\
 \
 static inline void name##_return(name *self, name##_id id) {\
-    assert(self != NULL);\
-    assert(self->count > 0);\
-    assert(name##_valid(self, id));\
-    ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
-    assert(id.index < vector->count);\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
+    ds_assert(name##_valid(self, id));\
+    ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
+    ds_assert(id.index < vector->count);\
     --self->count;\
     if (self->next.index > id.index) {\
         self->next.index = id.index;\
@@ -138,10 +138,10 @@ static inline void name##_return(name *self, name##_id id) {\
 }\
 \
 static inline void name##_clear(name *self) {\
-    assert(self != NULL);\
-    ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
+    ds_assert(self != NULL);\
+    ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
     if (self->count == 0) {\
         return;\
     }\
@@ -156,7 +156,7 @@ static inline void name##_clear(name *self) {\
             break;\
         }\
     }\
-    assert(self->count == 0);\
+    ds_assert(self->count == 0);\
     self->next = (name##_id) {\
         0,\
         self->next.age,\
@@ -164,11 +164,11 @@ static inline void name##_clear(name *self) {\
 }\
 \
 static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    assert(self != NULL);\
-    assert(action != NULL);\
-    const ds_##name##_vector *vector = &self->buckets;\
-    assert(self->count <= vector->count);\
-    assert(vector->array != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(action != NULL);\
+    const ds__##name##_vector *vector = &self->buckets;\
+    ds_assert(self->count <= vector->count);\
+    ds_assert(vector->array != NULL);\
     ds_size remaining = self->count;\
     for (ds_size i = 0; remaining > 0 && i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
@@ -177,13 +177,13 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
         action(vector->array[i].data);\
         --remaining;\
     }\
-    assert(remaining == 0);\
+    ds_assert(remaining == 0);\
 }\
 \
 static inline void name##_delete(name *self) {\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     name##_clear(self);\
-    ds_##name##_vector_delete(&self->buckets);\
+    ds__##name##_vector_delete(&self->buckets);\
     *self = (name) {0};\
 }
 

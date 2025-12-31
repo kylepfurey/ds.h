@@ -7,6 +7,16 @@
 
 #include "std.h"
 
+/** Asserts used in data structures. */
+#ifdef NDEBUG
+#define ds_assert(cond) ((void) 0)
+#else
+#define ds_assert(cond)\
+do if (!(cond)) fprintf(stderr, \
+"ds.h - ASSERTION FAILED\nFunction:\t%s()\nLine:\t\t%d\nCondition:\t%s\n", \
+__func__, __LINE__, (#cond)), abort(); while (false)
+#endif
+
 /** The default data structure allocators. */
 #define ds_malloc   malloc
 #define ds_calloc   calloc
@@ -58,7 +68,7 @@ static inline void void_deleter(void *self) {
 
 /** Hashes any data as an array of bytes. */
 static inline size_t hashify(size_t size, const void *data) {
-    assert(data != NULL);
+    ds_assert(data != NULL);
     // FNV-1a
     const ds_byte *memory = (ds_byte *) data;
     size_t hash = 2166136261u; // FNV offset

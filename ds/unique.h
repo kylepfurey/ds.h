@@ -16,7 +16,7 @@ typedef struct {\
 \
 static inline name name##_new(T data) {\
     T *self = (T *) ds_malloc(sizeof(T));\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     *self = data;\
     return (name) {\
         self,\
@@ -25,7 +25,7 @@ static inline name name##_new(T data) {\
 \
 static inline name name##_copy(name *unique) {\
     T *self = (T *) ds_malloc(sizeof(T));\
-    assert(self != NULL);\
+    ds_assert(self != NULL);\
     *self = *unique->data;\
     return (name) {\
         self,\
@@ -33,27 +33,27 @@ static inline name name##_copy(name *unique) {\
 }\
 \
 static inline T *name##_get(name *self) {\
-    assert(self != NULL);\
-    assert(self->data != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(self->data != NULL);\
     return self->data;\
 }\
 \
 static inline const T *name##_get_const(const name *self) {\
-    assert(self != NULL);\
-    assert(self->data != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(self->data != NULL);\
     return self->data;\
 }\
 \
 static inline void name##_reset(name *self, T data) {\
-    assert(self != NULL);\
-    assert(self->data != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(self->data != NULL);\
     deleter(self->data);\
     *self->data = data;\
 }\
 \
 static inline void name##_delete(name *self) {\
-    assert(self != NULL);\
-    assert(self->data != NULL);\
+    ds_assert(self != NULL);\
+    ds_assert(self->data != NULL);\
     deleter(self->data);\
     ds_free(self->data);\
     *self = (name) {0};\

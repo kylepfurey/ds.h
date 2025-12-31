@@ -58,7 +58,7 @@ static inline name##_node *name##_get(name *self, ds_size index) {\
     } else {\
         node = self->tail;\
         ds_assert(node != NULL);\
-        for (ptrdiff_t i = self->count - 1; i != index; --i) {\
+        for (ds_diff i = self->count - 1; i != index; --i) {\
             node = node->previous;\
             ds_assert(node != NULL);\
         }\
@@ -80,7 +80,7 @@ static inline const name##_node *name##_get_const(const name *self, ds_size inde
     } else {\
         node = self->tail;\
         ds_assert(node != NULL);\
-        for (ptrdiff_t i = self->count - 1; i != index; --i) {\
+        for (ds_diff i = self->count - 1; i != index; --i) {\
             node = node->previous;\
             ds_assert(node != NULL);\
         }\

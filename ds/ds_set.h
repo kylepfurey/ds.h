@@ -1,5 +1,5 @@
 // .h
-// Generic Sorted Set Data Structure
+// Generic Sorted Binary Tree Set Data Structure
 // by Kyle Furey
 
 /**
@@ -11,7 +11,7 @@
 
 #include "ds_def.h"
 
-/** Declares a named sorted set of the given type. */
+/** Declares a named sorted binary tree set of the given type. */
 #define DECLARE_SET_NAMED(name, T, x_y_comparer, x_y_equals, deleter)\
 \
 typedef struct ds__##name##_node {\
@@ -357,7 +357,7 @@ static inline void name##_delete(name *self) {\
     *self = (name) {0};\
 }
 
-/** Declares a sorted set of the given type. */
+/** Declares a sorted binary tree set of the given type. */
 #define DECLARE_SET(T, x_y_comparer, x_y_equals, deleter) DECLARE_SET_NAMED(T##_set, T, x_y_comparer, x_y_equals, deleter)
 
 #endif // DS_SET_H

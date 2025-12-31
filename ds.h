@@ -3,7 +3,27 @@
 // by Kyle Furey
 
 /**
+ * This is a C99 header-only data structure library.
+ * Each of the following header files provide DECLARE and DECLARE_NAMED macros.
+ * These macros are used to generate type-safe data structures.
  *
+ * This file simply includes all of them and the C standard library in-order.
+ * The library includes are as follows:
+ *
+ * ds_std.h         - C Standard Library Includes
+ * ds_def.h         - ds.h Type, Macro, and Function Declarations
+ * ds_allocator.h   - Block Allocator
+ * ds_vector.h      - Dynamic Array
+ * ds_string.h      - Mutable String
+ * ds_list.h        - Doubly Linked List
+ * ds_queue.h       - Double Ended Priority Queue
+ * ds_set.h         - Sorted Binary Tree Set
+ * ds_map.h         - Key-Value Hash Map
+ * ds_unique.h      - Unique Reference
+ * ds_shared.h      - Shared Reference
+ * ds_weak.h        - Weak Reference
+ * ds_slab.h        - Slab Allocator
+ * ds_signal.h      - Multicast Event
  */
 
 #ifndef DS_H

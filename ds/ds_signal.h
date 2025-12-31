@@ -1,5 +1,5 @@
 // .h
-// Generic Event Handler Data Structure
+// Generic Multicast Event Data Structure
 // by Kyle Furey
 
 /**
@@ -11,7 +11,7 @@
 
 #include "ds_slab.h"
 
-/** Declares a named event handler for the given function signature. */
+/** Declares a named multicast event for the given function signature. */
 #define DECLARE_SIGNAL_NAMED(name, T, R, ...)\
 \
 typedef R(*name##_func)(T *, ##__VA_ARGS__);\
@@ -88,9 +88,6 @@ static inline void name##_delete(name *self) {\
     *self = (name) {0};\
 }
 
-/** Declares an event handler for the given function signature.  */
-#define DECLARE_SIGNAL(T, R, ...) DECLARE_SIGNAL_NAMED(T##_signal, T, R, ##__VA_ARGS__)
-
 /** Invokes a signal with the given arguments. */
 #define signal_invoke(self, ...)\
 do {\
@@ -108,6 +105,9 @@ do {\
         --remaining;\
     }\
     ds_assert(remaining == 0);\
-} while (false);
+} while (false)
+
+/** Declares a multicast event for the given function signature.  */
+#define DECLARE_SIGNAL(T, R, ...) DECLARE_SIGNAL_NAMED(T##_signal, T, R, ##__VA_ARGS__)
 
 #endif // DS_SIGNAL_H

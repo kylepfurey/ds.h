@@ -1,5 +1,5 @@
 // .h
-// Generic Hash Map Data Structure
+// Generic Key-Value Hash Map Data Structure
 // by Kyle Furey
 
 /**
@@ -11,7 +11,7 @@
 
 #include "ds_vector.h"
 
-/** Declares a named hash map of the given types. */
+/** Declares a named key-value hash map of the given types. */
 #define DECLARE_MAP_NAMED(name, K, V, key_hasher, x_y_equals, value_deleter)\
 \
 typedef struct {\
@@ -299,7 +299,7 @@ static inline void name##_delete(name *self) {\
     *self = (name) {0};\
 }
 
-/** Declares a hash map of the given types. */
+/** Declares a key-value hash map of the given types. */
 #define DECLARE_MAP(K, V, key_hasher, x_y_equals, value_deleter) DECLARE_MAP_NAMED(K##_##V##_map, K, V, key_hasher, x_y_equals, value_deleter)
 
 #endif // DS_MAP_H

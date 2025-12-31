@@ -226,7 +226,7 @@ static inline ds_size name##_find_last(const name *self, const T *str) {\
     if (length == 0 || length > self->buffer.count) {\
         return NOT_FOUND;\
     }\
-    for (ptrdiff_t i = self->buffer.count - length + 1; i-- > 0;) {\
+    for (ds_diff i = self->buffer.count - length + 1; i-- > 0;) {\
         if (ds__##name##_strcmp(self->buffer.array + i, str) == 0) {\
             return i;\
         }\

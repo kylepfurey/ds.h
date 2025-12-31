@@ -6,10 +6,10 @@
  * ds.h
  *
  * This is a C99 header-only data structure library.
- * Each of the following header files provide DECLARE and DECLARE_NAMED macros.
+ * Each of the following data structure headers provide ds_DECLARE and ds_DECLARE_NAMED macros.
  * These macros are used to generate type-safe data structures.
  *
- * This file simply includes all of them and the C standard library in-order.
+ * This file simply includes all of them and some C standard library headers.
  * The library includes are as follows:
  *
  * ds_std.h         - C Standard Library Includes

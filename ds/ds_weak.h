@@ -5,6 +5,12 @@
 /**
  * ds_weak.h
  *
+ * ds_DECLARE_WEAK_NAMED(
+ *      name,               - The name of the data structure and function prefix.
+ *
+ *      shared_name,        - The name of the shared reference data structure to extend.
+ * )
+ *
  * Weak references are a counterpart to shared references that don't own the memory.
  * These references act as a view into the memory only when needed. They have their own weak_count.
  * Weak references are "weak" because the memory may already be deleted by shared references.
@@ -13,19 +19,37 @@
  * weak references are great for managing memory internally while allowing external
  * parties to have temporary access to it. This is great for breaking reference cycles.
  *
- * weak         weak_new            ( shared* shared )
+ * * Returns a new weak reference from <shared>.
+ * * This data structure must be deleted with weak_delete().
  *
- * weak         weak_copy           ( weak* weak )
+ *   weak     weak_new            ( shared* shared )
  *
- * uint         weak_shared_count   ( const weak* self )
+ * * Returns a new weak reference with the same address as <weak>.
+ * * This data structure must be deleted with weak_delete().
  *
- * uint         weak_weak_count     ( const weak* self )
+ *   weak     weak_copy           ( weak* weak )
  *
- * bool         weak_valid          ( const weak* self )
+ * * Returns the number of shared references to <self>'s data.
  *
- * shared       weak_upgrade        ( weak* self )
+ *   uint     weak_shared_count   ( const weak* self )
  *
- * void         weak_delete         ( weak* self )
+ * * Returns the number of weak references to <self>'s data.
+ *
+ *   uint     weak_weak_count     ( const weak* self )
+ *
+ * * Returns whether the weak reference is still valid.
+ *
+ *   bool     weak_valid          ( const weak* self )
+ *
+ * * Returns a new shared reference with the same address as <self>.
+ * * <self> must be valid.
+ * * This data structure must be deleted with shared_delete().
+ *
+ *   shared   weak_upgrade        ( weak* self )
+ *
+ * * Safely deletes a weak reference.
+ *
+ *   void     weak_delete         ( weak* self )
  */
 
 #ifndef DS_WEAK_H
@@ -34,13 +58,13 @@
 #include "ds_def.h"
 
 /** Declares a named weak pointer for the given type. */
-#define DECLARE_WEAK_NAMED(name, shared_name)\
+#define ds_DECLARE_WEAK_NAMED(name, shared_name)\
 \
 typedef struct {\
     ds__##shared_name##_control_block *control_block;\
 } name;\
 \
-DS_API static inline name name##_new(shared_name *shared) {\
+ds_API static inline name name##_new(shared_name *shared) {\
     ds_assert(shared != NULL);\
     ds_assert(shared->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = shared->control_block;\
@@ -52,7 +76,7 @@ DS_API static inline name name##_new(shared_name *shared) {\
     };\
 }\
 \
-DS_API static inline name name##_copy(name *weak) {\
+ds_API static inline name name##_copy(name *weak) {\
     ds_assert(weak != NULL);\
     ds_assert(weak->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = weak->control_block;\
@@ -63,19 +87,19 @@ DS_API static inline name name##_copy(name *weak) {\
     };\
 }\
 \
-DS_API static inline ds_uint name##_shared_count(const name *self) {\
+ds_API static inline ds_uint name##_shared_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->shared_count;\
 }\
 \
-DS_API static inline ds_uint name##_weak_count(const name *self) {\
+ds_API static inline ds_uint name##_weak_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->weak_count;\
 }\
 \
-DS_API static inline bool name##_valid(const name *self) {\
+ds_API static inline ds_bool name##_valid(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
@@ -84,7 +108,7 @@ DS_API static inline bool name##_valid(const name *self) {\
     return control_block->shared_count > 0;\
 }\
 \
-DS_API static inline shared_name name##_upgrade(name *self) {\
+ds_API static inline shared_name name##_upgrade(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
@@ -97,7 +121,7 @@ DS_API static inline shared_name name##_upgrade(name *self) {\
     };\
 }\
 \
-DS_API static inline void name##_delete(name *self) {\
+ds_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
@@ -111,6 +135,7 @@ DS_API static inline void name##_delete(name *self) {\
 }
 
 /** Declares a weak pointer for the given type. */
-#define DECLARE_WEAK(T) DECLARE_WEAK_NAMED(weak_##T, shared_##T)
+#define ds_DECLARE_WEAK(T)\
+        ds_DECLARE_WEAK_NAMED(weak_##T, shared_##T)
 
 #endif // DS_WEAK_H

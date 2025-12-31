@@ -5,6 +5,17 @@
 /**
  * ds_signal.h
  *
+ * ds_DECLARE_SIGNAL_NAMED(
+ *      name,               - The name of the data structure and function prefix.
+ *
+ *      T,                  - The type to generate this data structure with.
+ *                            A pointer to T is always the first argument of the function signature.
+ *
+ *      R,                  - The return type of the function signature.
+ *
+ *      A...,               - Optionally any argument types of the function signature.
+ * )
+ *
  * Signals are collections of bindings of objects to functions.
  * These functions share the same signature and the signal can call each function at once.
  * The signal will pass the same arguments to each function so each object is updated.
@@ -13,25 +24,57 @@
  * Objects can opaquely bind to an event and be notified when the event is triggered.
  * Objects must unbind themselves on destruction to avoid invalid memory access on invoke.
  *
- * signal           signal_new          ( size_t capacity )
+ * * signal_func is an alias for a pointer to the function signature.
  *
- * signal           signal_copy         ( const signal* signal )
+ *   typedef R (*) (T*, A...) signal_func;
  *
- * size_t           signal_count        ( const signal* self )
+ * * Returns a new signal with a current capacity of <capacity> bindings.
+ * * <capacity> must be greater than 0.
+ * * This data structure must be deleted with signal_delete().
  *
- * size_t           signal_empty        ( const signal* self )
+ *   signal           signal_new          ( size_t capacity )
  *
- * bool             signal_bound        ( const signal* self, signal_handle handle )
+ * * Returns a new signal shallow copied from <signal>.
+ * * This data structure must be deleted with signal_delete().
  *
- * signal_handle    signal_bind         ( signal* self, T* target, signal_func func )
+ *   signal           signal_copy         ( const signal* signal )
  *
- * void             signal_unbind       ( signal* self, signal_handle handle )
+ * * Returns the current number of bindings in the signal.
  *
- * macro            signal_invoke       ( signal* self, args... )
+ *   size_t           signal_count        ( const signal* self )
  *
- * void             signal_clear        ( signal* self )
+ * * Returns whether the signal has no bindings.
  *
- * void             signal_delete       ( signal* self )
+ *   bool             signal_empty        ( const signal* self )
+ *
+ * * Returns whether <handle> is bound to the signal.
+ *
+ *   bool             signal_bound        ( const signal* self, signal_handle handle )
+ *
+ * * Binds <target> with <func> into the signal.
+ * * Returns a handle to the binding for unbinding.
+ *
+ *   signal_handle    signal_bind         ( signal* self, T* target, signal_func func )
+ *
+ * * Unbinds <handle> from the signal.
+ * * <handle> must be bound to signal.
+ *
+ *   void             signal_unbind       ( signal* self, signal_handle handle )
+ *
+ * * This is a macro, not a function.
+ * * Invokes <self> with the given arguments.
+ * * <args> must match the function signature and are passed to each binding.
+ * * The signal can be mutated while being invoked.
+ *
+ *   macro            signal_invoke       ( signal* self, args... )
+ *
+ * * Deletes all bindings in a signal.
+ *
+ *   void             signal_clear        ( signal* self )
+ *
+ * * Safely deletes a signal.
+ *
+ *   void             signal_delete       ( signal* self )
  */
 
 #ifndef DS_SIGNAL_H
@@ -40,7 +83,7 @@
 #include "ds_slab.h"
 
 /** Declares a named multicast event for the given function signature. */
-#define DECLARE_SIGNAL_NAMED(name, T, R, ...)\
+#define ds_DECLARE_SIGNAL_NAMED(name, T, R, ...)\
 \
 typedef R(*name##_func)(T *, ##__VA_ARGS__);\
 \
@@ -49,7 +92,7 @@ typedef struct {\
     name##_func func;\
 } ds__##name##_binding;\
 \
-DECLARE_SLAB_NAMED(ds__##name##_slab, ds__##name##_binding, void_deleter)\
+ds_DECLARE_SLAB_NAMED(ds__##name##_slab, ds__##name##_binding, ds_void_deleter)\
 \
 typedef ds__##name##_slab_id name##_handle;\
 \
@@ -57,36 +100,36 @@ typedef struct {\
     ds__##name##_slab bindings;\
 } name;\
 \
-DS_API static inline name name##_new(ds_size capacity) {\
+ds_API static inline name name##_new(ds_size capacity) {\
     ds_assert(capacity > 0);\
     return (name) {\
         ds__##name##_slab_new(capacity),\
     };\
 }\
 \
-DS_API static inline name name##_copy(const name *signal) {\
+ds_API static inline name name##_copy(const name *signal) {\
     ds_assert(signal != NULL);\
     return (name) {\
         ds__##name##_slab_copy(&signal->bindings),\
     };\
 }\
 \
-DS_API static inline ds_size name##_count(const name *self) {\
+ds_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->bindings.count;\
 }\
 \
-DS_API static inline ds_size name##_empty(const name *self) {\
+ds_API static inline ds_bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->bindings.count == 0;\
 }\
 \
-DS_API static inline bool name##_bound(const name *self, name##_handle handle) {\
+ds_API static inline ds_bool name##_bound(const name *self, name##_handle handle) {\
     ds_assert(self != NULL);\
     return ds__##name##_slab_valid(&self->bindings, (ds__##name##_slab_id) handle);\
 }\
 \
-DS_API static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
+ds_API static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
     ds_assert(self != NULL);\
     ds_assert(target != NULL);\
     ds_assert(func != NULL);\
@@ -99,18 +142,18 @@ DS_API static inline name##_handle name##_bind(name *self, T *target, name##_fun
     );\
 }\
 \
-DS_API static inline void name##_unbind(name *self, name##_handle handle) {\
+ds_API static inline void name##_unbind(name *self, name##_handle handle) {\
     ds_assert(self != NULL);\
     ds_assert(name##_bound(self, handle));\
     ds__##name##_slab_return(&self->bindings, (ds__##name##_slab_id) handle);\
 }\
 \
-DS_API static inline void name##_clear(name *self) {\
+ds_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_slab_clear(&self->bindings);\
 }\
 \
-DS_API static inline void name##_delete(name *self) {\
+ds_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_slab_delete(&self->bindings);\
     *self = (name) {0};\
@@ -133,9 +176,10 @@ do {\
         --remaining;\
     }\
     ds_assert(remaining == 0);\
-} while (false)
+} while (ds_false)
 
 /** Declares a multicast event for the given function signature.  */
-#define DECLARE_SIGNAL(T, R, ...) DECLARE_SIGNAL_NAMED(T##_signal, T, R, ##__VA_ARGS__)
+#define ds_DECLARE_SIGNAL(T, R, ...)\
+        ds_DECLARE_SIGNAL_NAMED(T##_signal, T, R, ##__VA_ARGS__)
 
 #endif // DS_SIGNAL_H

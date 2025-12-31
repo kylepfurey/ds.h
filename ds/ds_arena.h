@@ -5,29 +5,49 @@
 /**
  * ds_arena.h
  *
+ * ds_DECLARE_ARENA_NAMED(
+ *      name,               - The name of the data structure and function prefix.
+ *
+ *      alignment,          - The alignment of allocated arena memory.
+ * )
+ *
+ * The "arena" struct is automatically generated with the default word size for alignment.
+ *
  * This is a simple block allocator. It allocates a buffer and is divided per allocation.
  * This allocator is type-agnostic and operates with raw memory to create new objects.
  * Allocations are made at runtime using arena_malloc().
  *
  * This is a fantastic alternative to malloc() if you want deterministic heap memory.
  *
- * Creates a new arena with at least <size> bytes of aligned memory.
- * arena    arena_new       ( size_t size )
+ * * Returns a new arena with at least <size> bytes of aligned memory.
+ * * This data structure must be deleted with arena_delete().
  *
- * Allocates at least <size> number of the bytes. Returns a new pointer or NULL.
- * void*    arena_malloc    ( arena* self, size_t size )
+ *   arena    arena_new       ( size_t size )
  *
- * Allocates a <count> * <size> array of zeroed memory. Returns a new pointer or NULL.
- * void*    arena_calloc    ( arena* self, size_t count, size_t size )
+ * * Allocates at least <size> number of the bytes.
+ * * Returns a new pointer or NULL.
  *
- * Reallocates <ptr> to have at least <size> bytes. Returns a new pointer or NULL.
- * void*    arena_realloc   ( arena* self, void *ptr, ds_size size )
+ *   void*    arena_malloc    ( arena* self, size_t size )
  *
- * Frees <ptr> from the arena so it may be reused again. <ptr> can be NULL.
- * void     arena_free      ( arena* self, void* ptr )
+ * * Allocates a <count> * <size> array of zeroed memory.
+ * * Returns a new pointer or NULL.
  *
- * Safely deletes an arena. Optionally, this can assert if the arena leaked memory.
- * void     arena_delete    ( arena* self )
+ *   void*    arena_calloc    ( arena* self, size_t count, size_t size )
+ *
+ * * Reallocates <ptr> to have at least <size> bytes.
+ * * Returns a new pointer or NULL.
+ *
+ *   void*    arena_realloc   ( arena* self, void *ptr, ds_size size )
+ *
+ * * Frees <ptr> from the arena so it may be reused again.
+ * * <ptr> can be NULL.
+ *
+ *   void     arena_free      ( arena* self, void* ptr )
+ *
+ * * Safely deletes an arena.
+ * * If ds_ARENA_LEAK_ASSERT is true, this will assert if the arena leaked memory.
+ *
+ *   void     arena_delete    ( arena* self )
  */
 
 #ifndef DS_ARENA_H
@@ -36,7 +56,7 @@
 #include "ds_def.h"
 
 /** Declares a named block allocator with the given alignment. */
-#define DECLARE_ARENA_NAMED(name, alignment)\
+#define ds_DECLARE_ARENA_NAMED(name, alignment)\
 \
 typedef struct ds__##name##_block {\
     ds_size size;\
@@ -44,7 +64,7 @@ typedef struct ds__##name##_block {\
 } ds__##name##_block;\
 \
 enum {\
-    ds__##name##_block_SIZE = ARENA_ALIGN(sizeof(ds__##name##_block), alignment),\
+    ds__##name##_block_SIZE = ds_ARENA_ALIGN(sizeof(ds__##name##_block), alignment),\
 };\
 \
 typedef struct {\
@@ -53,9 +73,9 @@ typedef struct {\
     ds__##name##_block *free;\
 } name;\
 \
-DS_API static inline name name##_new(ds_size size) {\
+ds_API static inline name name##_new(ds_size size) {\
     ds_assert(size >= ds__##name##_block_SIZE + (alignment));\
-    size = ARENA_ALIGN(size, (alignment));\
+    size = ds_ARENA_ALIGN(size, (alignment));\
     size += ds__##name##_block_SIZE;\
     void *start = ds_malloc(size);\
     ds_assert(start != NULL);\
@@ -69,12 +89,12 @@ DS_API static inline name name##_new(ds_size size) {\
     return self;\
 }\
 \
-DS_API static inline void *name##_malloc(name *self, ds_size size) {\
+ds_API static inline void *name##_malloc(name *self, ds_size size) {\
     ds_assert(self != NULL);\
     if (size == 0) {\
         return NULL;\
     }\
-    size = ARENA_ALIGN(size, (alignment));\
+    size = ds_ARENA_ALIGN(size, (alignment));\
     ds__##name##_block **previous = &self->free;\
     ds__##name##_block *current = self->free;\
     while (current != NULL) {\
@@ -94,7 +114,7 @@ DS_API static inline void *name##_malloc(name *self, ds_size size) {\
     return NULL;\
 }\
 \
-DS_API static inline void name##_free(name *self, void *ptr) {\
+ds_API static inline void name##_free(name *self, void *ptr) {\
     ds_assert(self != NULL);\
     ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
@@ -124,18 +144,18 @@ DS_API static inline void name##_free(name *self, void *ptr) {\
     }\
 }\
 \
-DS_API static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
+ds_API static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
     ds_assert(self != NULL);\
     ds_assert(size == 0 || count <= SIZE_MAX / size);\
     ds_size total = count * size;\
     void *ptr = name##_malloc(self, total);\
     if (ptr != NULL) {\
-        memset(ptr, 0, total);\
+        ds_memset(ptr, 0, total);\
     }\
     return ptr;\
 }\
 \
-DS_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
+ds_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
     ds_assert(self != NULL);\
     ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
@@ -154,15 +174,15 @@ DS_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {
     if (new_ptr == NULL) {\
         return NULL;\
     }\
-    memcpy(new_ptr, ptr, block->size);\
+    ds_memcpy(new_ptr, ptr, block->size);\
     name##_free(self, ptr);\
     return new_ptr;\
 }\
 \
-DS_API static inline void name##_delete(name *self) {\
+ds_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->start != NULL);\
-    if (ARENA_LEAK_ASSERT) {\
+    if (ds_ARENA_LEAK_ASSERT) {\
         ds_assert(\
             self->free != NULL &&\
             self->free->next == NULL &&\
@@ -175,9 +195,10 @@ DS_API static inline void name##_delete(name *self) {\
 }
 
 /** Declares a block allocator with the alignment of the given type. */
-#define DECLARE_ARENA(T_aligned) DECLARE_ARENA_NAMED(T_aligned##_arena, sizeof(T_aligned))
+#define ds_DECLARE_ARENA(T_aligned)\
+        ds_DECLARE_ARENA_NAMED(T_aligned##_arena, sizeof(T_aligned))
 
-/** Declares the default block allocator type. */
-DECLARE_ARENA_NAMED(arena, sizeof(void *))
+/** Declares the default OS-aligned block allocator type. */
+ds_DECLARE_ARENA_NAMED(arena, sizeof(void *))
 
 #endif // DS_ARENA_H

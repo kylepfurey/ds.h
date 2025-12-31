@@ -8,37 +8,43 @@
  * This file is used by the ds.h library for declarations.
  * Settings, default parameters, and repeated functionality are defined here.
  *
- * ds_assert() is used to make assertions clear and clean with zero release overhead.
+ * ds_API is a tag in front of each generated ds.h function.
+ *
+ * ds_assert() is used to make assertions clear and clean with zero runtime overhead.
  *
  * ds_malloc, ds_calloc, ds_realloc, and ds_free are ds.h's default allocator functions.
+ * ds_memcpy, ds_memmove, ds_memset are ds.h's default memory functions.
+ * ds_strlen, ds_tolower, ds_toupper, ds_isspace are ds.h's default string functions.
  *
- * ARENA_ALIGN() is a macro used to align an arena's memory.
- * ARENA_LEAK_ASSERT is whether arena_delete() will assert if memory is "leaked".
+ * ds_ARENA_ALIGN is a macro used to align an arena's memory.
+ * ds_ARENA_LEAK_ASSERT is whether arena_delete() will assert if memory is "leaked".
  *
- * VECTOR_EXPANSION is a multiplier applied to a vector's capacity to make room.
- * VECTOR_TRUNC_ASSERT is whether vector_resize() will assert when deleting elements.
+ * ds_VECTOR_EXPANSION is a multiplier applied to a vector's capacity to make room.
+ * ds_VECTOR_TRUNC_ASSERT is whether vectors and strings will assert when implicitly truncating elements.
  *
- * MAP_LOAD_FACTOR_NUM / MAP_LOAD_FACTOR_DEN is the maximum percentage a map can be filled.
+ * ds_MAP_LOAD_FACTOR_NUM / ds_MAP_LOAD_FACTOR_DEN is the maximum percentage a map can be filled.
  * When the map's capacity is greater than this fraction, it will rehash its values.
  *
- * DEFAULT_COMPARE can replace x_y_comparer for trivial numeric comparisons.
- * REVERSE_COMPARE is the exact opposite of DEFAULT_COMPARE.
+ * ds_DEFAULT_COMPARE can replace x_y_comparer for trivial numeric comparisons.
+ * ds_REVERSE_COMPARE is the exact opposite of ds_DEFAULT_COMPARE.
  *
- * DEFAULT_EQUALS can replace x_y_equals for trivial numeric equality.
+ * ds_DEFAULT_EQUALS can replace x_y_equals for trivial numeric equality.
  *
- * DEFAULT_HASH calls ds_hashify() on any key to get its hash number. Replaces key_hasher.
- * INT_HASH uses an integer type as a hash number. Replaces key_hasher.
- * STRING_HASH calls ds_hashify() on a string with strlen(). Replaces key_hasher.
+ * ds_DEFAULT_HASH calls ds_hashify() on any key to get its hash number. Replaces key_hasher.
+ * ds_INT_HASH uses an integer type as a hash number. Replaces key_hasher.
+ * ds_STRING_HASH calls ds_hashify() on a string with strlen(). Replaces key_hasher.
  *
- * NOT_FOUND is a sentinel value used to indicate an invalid index.
+ * ds_NOT_FOUND is a sentinel value used to indicate an invalid index.
  *
- * BUCKET_EMPTY indicates a bucket is empty.
- * BUCKET_OCCUPIED indicates a bucket is full.
- * BUCKET_SKIP indicates a bucket was once full.
+ * ds_false and ds_true are boolean values used internally.
  *
- * ds_byte, ds_int, ds_uint, ds_size, ds_diff are type aliases used internally.
+ * ds_BUCKET_EMPTY indicates a bucket is empty.
+ * ds_BUCKET_OCCUPIED indicates a bucket is full.
+ * ds_BUCKET_SKIP indicates a bucket was once full.
  *
- * void_deleter() is a no-op deleter function used for data structures with trivial types.
+ * ds_bool, ds_byte, ds_int, ds_uint, ds_size, and ds_diff are type aliases used internally.
+ *
+ * ds_void_deleter() is a no-op deleter function used for data structures with trivial types.
  *
  * ds_hashify() is a generic Fowler-Noll-Vo implementation for hashing keys.
  */
@@ -46,7 +52,8 @@
 #ifndef DS_DEF_H
 #define DS_DEF_H
 
-#include "ds_std.h"
+/** A tag for generated functions indicating they are from the ds.h library. */
+#define ds_API
 
 /** Asserts used in data structures. */
 #ifdef NDEBUG
@@ -55,54 +62,68 @@
 #define ds_assert(cond)\
 do if (!(cond)) fprintf(stderr, \
 "ds.h - ASSERTION FAILED\nFunction:\t%s()\nLine:\t\t%d\nCondition:\t%s\n", \
-__func__, __LINE__, (#cond)), abort(); while (false)
+__func__, __LINE__, (#cond)), abort(); while (ds_false)
 #endif
 
-/** The default data structure allocators. */
+/** The default data structure allocator functions. */
 #define ds_malloc   malloc
 #define ds_calloc   calloc
 #define ds_realloc  realloc
 #define ds_free     free
 
+/** The default data structure memory functions. */
+#define ds_memcpy   memcpy
+#define ds_memmove  memmove
+#define ds_memset   memset
+
+/** The default data structure string functions. */
+#define ds_strlen   strlen
+#define ds_tolower  tolower
+#define ds_toupper  toupper
+#define ds_isspace  isspace
+
 /** Aligns a size for an arena. */
-#define ARENA_ALIGN(size, alignment) (((size) + ((alignment) - 1)) & ~((alignment) - 1))
+#define ds_ARENA_ALIGN(size, alignment) (((size) + ((alignment) - 1)) & ~((alignment) - 1))
 
 /** Whether to assert when a deleted arena leaks memory. */
-#define ARENA_LEAK_ASSERT 1
+#define ds_ARENA_LEAK_ASSERT 1
 
 /** The rate to expand vectors at. */
-#define VECTOR_EXPANSION 2
+#define ds_VECTOR_EXPANSION 2
 
-/** Whether to assert when vectors (and strings) delete elements on resize. */
-#define VECTOR_TRUNC_ASSERT 1
+/** Whether to assert when vectors and strings implicitly truncate elements. */
+#define ds_VECTOR_TRUNC_ASSERT 1
 
 /** The maximum fill capacity before rehashing a map. */
-#define MAP_LOAD_FACTOR ((double) MAP_LOAD_FACTOR_NUM / (double) MAP_LOAD_FACTOR_DEN)
-#define MAP_LOAD_FACTOR_NUM 1
-#define MAP_LOAD_FACTOR_DEN 2
+#define ds_MAP_LOAD_FACTOR_NUM 1
+#define ds_MAP_LOAD_FACTOR_DEN 2
 
 /** Data structure parameters for trivial types. */
-#define DEFAULT_COMPARE     x > y
-#define REVERSE_COMPARE     x <= y
-#define DEFAULT_EQUALS      x == y
-#define DEFAULT_HASH        ds_hashify(sizeof(key), &key)
-#define INT_HASH            key
-#define STRING_HASH         ds_hashify(strlen(key), key)
+#define ds_DEFAULT_COMPARE x > y
+#define ds_REVERSE_COMPARE x <= y
+#define ds_DEFAULT_EQUALS  x == y
+#define ds_DEFAULT_HASH    ds_hashify(sizeof(key), &key)
+#define ds_INT_HASH        key
+#define ds_STRING_HASH     ds_hashify(ds_strlen(key), key)
 
 /** An index indicating something was not found. */
-#define NOT_FOUND ((ds_size) -1)
+#define ds_NOT_FOUND ((ds_size) -1)
 
-/** A tag for generated functions indicating they are from the ds.h library. */
-#define DS_API
+/** Boolean literals. */
+enum {
+    ds_false = 0,
+    ds_true = 1,
+};
 
 /** Each state in a hash map bucket. */
-typedef enum {
-    BUCKET_EMPTY = 0,
-    BUCKET_OCCUPIED = 1,
-    BUCKET_SKIP = 2,
-} ds_bucket_state;
+enum {
+    ds_BUCKET_EMPTY = 0,
+    ds_BUCKET_OCCUPIED = 1,
+    ds_BUCKET_SKIP = 2,
+};
 
-/** OS-aligned integer types for data structures. */
+/** OS-aligned types for data structures. */
+typedef     bool            ds_bool;
 typedef     uint8_t         ds_byte;
 typedef     signed int      ds_int;
 typedef     unsigned int    ds_uint;
@@ -110,12 +131,12 @@ typedef     size_t          ds_size;
 typedef     ptrdiff_t       ds_diff;
 
 /** A no-op deleter function for trivial types. */
-DS_API static inline void void_deleter(void *self) {
+ds_API static inline void ds_void_deleter(void *self) {
     (void) self;
 }
 
 /** Hashes any data as an array of bytes. */
-DS_API static inline ds_size ds_hashify(ds_size size, const void *data) {
+ds_API static inline ds_size ds_hashify(ds_size size, const void *data) {
     ds_assert(data != NULL);
     // FNV-1a
     const ds_byte *memory = (ds_byte *) data;

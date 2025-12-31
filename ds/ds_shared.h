@@ -5,27 +5,54 @@
 /**
  * ds_shared.h
  *
+ * ds_DECLARE_SHARED_NAMED(
+ *      name,               - The name of the data structure and function prefix.
+ *
+ *      T,                  - The type to generate this data structure with.
+ *
+ *      deleter,            - The name of the function used to deallocate T.
+ *                            ds_void_deleter may be used for trivial types.
+ * )
+ *
  * This is a reference counted pointer that ensures memory is freed when shared_count is 0.
  * Shared references create slight indirection for ensuring shared ownership of memory.
  *
  * When memory is accessed from multiple contexts in a program, a shared reference ensures
  * the memory is freed only after all owners are done with it.
  *
- * shared       shared_new              ( T data )
+ * * Returns a new shared reference containing <data>.
+ * * This data structure must be deleted with shared_delete().
  *
- * shared       shared_copy             ( shared* shared )
+ *   shared       shared_new              ( T data )
  *
- * uint         shared_shared_count     ( const shared* self )
+ * * Returns a new shared reference with the same address as <shared>.
+ * * This data structure must be deleted with shared_delete().
  *
- * uint         shared_weak_count       ( const shared* self )
+ *   shared       shared_copy             ( shared* shared )
  *
- * T*           shared_get              ( shared* self )
+ * * Returns the number of shared references to <self>'s data.
  *
- * const T*     shared_get_const        ( const shared* self )
+ *   uint         shared_shared_count     ( const shared* self )
  *
- * void         shared_reset            ( shared* self, T data )
+ * * Returns the number of weak references to <self>'s data.
  *
- * void         shared_delete           ( shared* self )
+ *   uint         shared_weak_count       ( const shared* self )
+ *
+ * * Returns a pointer to <self>'s data.
+ *
+ *   T*           shared_get              ( shared* self )
+ *
+ * * Returns a pointer to <self>'s data.
+ *
+ *   const T*     shared_get_const        ( const shared* self )
+ *
+ * * Resets the value in <self> with <data>.
+ *
+ *   void         shared_reset            ( shared* self, T data )
+ *
+ * * Safely deletes a shared reference.
+ *
+ *   void         shared_delete           ( shared* self )
  */
 
 #ifndef DS_SHARED_H
@@ -34,7 +61,7 @@
 #include "ds_def.h"
 
 /** Declares a named shared pointer for the given type. */
-#define DECLARE_SHARED_NAMED(name, T, deleter)\
+#define ds_DECLARE_SHARED_NAMED(name, T, deleter)\
 \
 typedef struct {\
     ds_uint shared_count;\
@@ -46,7 +73,7 @@ typedef struct {\
     ds__##name##_control_block *control_block;\
 } name;\
 \
-DS_API static inline name name##_new(T data) {\
+ds_API static inline name name##_new(T data) {\
     ds__##name##_control_block *control_block =\
     (ds__##name##_control_block *) ds_malloc(sizeof(ds__##name##_control_block));\
     ds_assert(control_block != NULL);\
@@ -60,7 +87,7 @@ DS_API static inline name name##_new(T data) {\
     };\
 }\
 \
-DS_API static inline name name##_copy(name *shared) {\
+ds_API static inline name name##_copy(name *shared) {\
     ds_assert(shared != NULL);\
     ds__##name##_control_block *control_block = shared->control_block;\
     ds_assert(control_block != NULL);\
@@ -70,19 +97,19 @@ DS_API static inline name name##_copy(name *shared) {\
     return *shared;\
 }\
 \
-DS_API static inline ds_uint name##_shared_count(const name *self) {\
+ds_API static inline ds_uint name##_shared_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->shared_count;\
 }\
 \
-DS_API static inline ds_uint name##_weak_count(const name *self) {\
+ds_API static inline ds_uint name##_weak_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->weak_count;\
 }\
 \
-DS_API static inline T *name##_get(name *self) {\
+ds_API static inline T *name##_get(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -91,7 +118,7 @@ DS_API static inline T *name##_get(name *self) {\
     return control_block->data;\
 }\
 \
-DS_API static inline const T *name##_get_const(const name *self) {\
+ds_API static inline const T *name##_get_const(const name *self) {\
     ds_assert(self != NULL);\
     const ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -100,7 +127,7 @@ DS_API static inline const T *name##_get_const(const name *self) {\
     return control_block->data;\
 }\
 \
-DS_API static inline void name##_reset(name *self, T data) {\
+ds_API static inline void name##_reset(name *self, T data) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -110,7 +137,7 @@ DS_API static inline void name##_reset(name *self, T data) {\
     *control_block->data = data;\
 }\
 \
-DS_API static inline void name##_delete(name *self) {\
+ds_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -128,6 +155,7 @@ DS_API static inline void name##_delete(name *self) {\
 }
 
 /** Declares a shared pointer for the given type. */
-#define DECLARE_SHARED(T, deleter) DECLARE_SHARED_NAMED(shared_##T, T, deleter)
+#define ds_DECLARE_SHARED(T, deleter)\
+        ds_DECLARE_SHARED_NAMED(shared_##T, T, deleter)
 
 #endif // DS_SHARED_H

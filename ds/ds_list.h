@@ -5,6 +5,15 @@
 /**
  * ds_list.h
  *
+ * ds_DECLARE_LIST_NAMED(
+ *      name,           - The name of the data structure and function prefix.
+ *
+ *      T,              - The type to generate this data structure with.
+ *
+ *      deleter,        - The name of the function used to deallocate T.
+ *                        ds_void_deleter may be used for trivial types.
+ * )
+ *
  * This is a doubly linked list. Data is allocated non-contiguously with pointer links.
  * This is the only data structure to publicly expose its node type in this library.
  * This is intentional for O(1) ordered insertions and removals via a node pointer.
@@ -13,51 +22,104 @@
  * Insertion and deletion is fast with direct node references.
  * Iteration is slower than contiguous containers due to pointer chasing and cache misses.
  *
- * typedef struct {
- *      T                   data;
- *      list_node* const    previous;
- *      list_node* const    next;
- * } list_node;
+ * * This is the underlying list_node type. You must not modify its pointers.
  *
- * list                 list_new                ( void )
+ *   typedef struct {
+ *        T                   data;
+ *        list_node* const    previous;
+ *        list_node* const    next;
+ *   } list_node;
  *
- * list                 list_copy               ( const list* self )
+ * * Returns a new list.
+ * * This data structure must be deleted with list_delete().
  *
- * size_t               list_count              ( const list* self )
+ *   list                 list_new                ( void )
  *
- * bool                 list_empty              ( const list* self )
+ * * Returns a new list shallow copied from <list>.
+ * * This data structure must be deleted with list_delete().
  *
- * list_node*           list_head               ( list* self )
+ *   list                 list_copy               ( const list* list )
  *
- * const list_node*     list_head_const         ( const list* self )
+ * * Returns the number of nodes in the list.
  *
- * list_node*           list_tail               ( list* self )
+ *   size_t               list_count              ( const list* self )
  *
- * const list_node*     list_tail_const         ( const list* self )
+ * * Returns whether the list is empty.
  *
- * list_node*           list_get                ( list* self, size_t index )
+ *   bool                 list_empty              ( const list* self )
  *
- * const list_node*     list_get_const          ( const list* self, size_t index )
+ * * Returns the node at the front of the list.
+ * * The list must not be empty.
  *
- * list_node*           list_insert_before      ( list* self, list_node* node, T data )
+ *   list_node*           list_front              ( list* self )
  *
- * list_node*           list_insert_after       ( list* self, list_node* node, T data )
+ * * Returns the node at the front of the list.
+ * * The list must not be empty.
  *
- * void                 list_erase              ( list* self, list_node* node )
+ *   const list_node*     list_front_const        ( const list* self )
  *
- * list_node*           list_push_front         ( list* self, T data )
+ * * Returns the node at the end of the list.
+ * * The list must not be empty.
  *
- * list_node*           list_push_back          ( list* self, T data )
+ *   list_node*           list_back               ( list* self )
  *
- * void                 list_pop_front          ( list* self )
+ * * Returns the node at the end of the list.
+ * * The list must not be empty.
  *
- * void                 list_pop_back           ( list* self )
+ *   const list_node*     list_back_const         ( const list* self )
  *
- * void                 list_clear              ( list* self )
+ * * Traverses the linked list to find and return a node.
+ * * <index> must be valid.
  *
- * void                 list_foreach            ( const list* self, void (*action)(T) )
+ *   list_node*           list_get                ( list* self, size_t index )
  *
- * void                 list_delete             ( list* self )
+ * * Traverses the linked list to find and return a node.
+ * * <index> must be valid.
+ *
+ *   const list_node*     list_get_const          ( const list* self, size_t index )
+ *
+ * * Prepends and returns a new node containing <data> before <node>.
+ * * <node> must be owned by list.
+ *
+ *   list_node*           list_insert_before      ( list* self, list_node* node, T data )
+ *
+ * * Appends and returns a new node containing <data> after <node>.
+ * * <node> must be owned by list.
+ *
+ *   list_node*           list_insert_after       ( list* self, list_node* node, T data )
+ *
+ * * Deletes a <node> from the list.
+ * * <node> must be owned by list.
+ *
+ *   void                 list_erase              ( list* self, list_node* node )
+ *
+ * * Prepends and returns a new node containing <data> to the front of the list.
+ *
+ *   list_node*           list_push_front         ( list* self, T data )
+ *
+ * * Appends and returns a new node containing <data> at the end of the list.
+ *
+ *   list_node*           list_push_back          ( list* self, T data )
+ *
+ * * Deletes the node at the front of the list.
+ *
+ *   void                 list_pop_front          ( list* self )
+ *
+ * * Deletes the node at the end of the list.
+ *
+ *   void                 list_pop_back           ( list* self )
+ *
+ * * Deletes all nodes in the list.
+ *
+ *   void                 list_clear              ( list* self )
+ *
+ * * Iterates the list calling <action> on each element.
+ *
+ *   void                 list_foreach            ( const list* self, void (*action)(T) )
+ *
+ * * Safely deletes a list.
+ *
+ *   void                 list_delete             ( list* self )
  */
 
 #ifndef DS_LIST_H
@@ -66,7 +128,7 @@
 #include "ds_def.h"
 
 /** Declares a named doubly linked list of the given type. */
-#define DECLARE_LIST_NAMED(name, T, deleter)\
+#define ds_DECLARE_LIST_NAMED(name, T, deleter)\
 \
 typedef struct name##_node {\
     T data;\
@@ -80,7 +142,7 @@ typedef struct {\
     struct name##_node *tail;\
 } name;\
 \
-DS_API static inline name name##_new() {\
+ds_API static inline name name##_new() {\
     return (name) {\
         0,\
         NULL,\
@@ -88,45 +150,45 @@ DS_API static inline name name##_new() {\
     };\
 }\
 \
-DS_API static inline ds_size name##_count(const name *self) {\
+ds_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->count;\
 }\
 \
-DS_API static inline bool name##_empty(const name *self) {\
+ds_API static inline ds_bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
-DS_API static inline name##_node *name##_head(name *self) {\
+ds_API static inline name##_node *name##_front(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->head != NULL);\
     return self->head;\
 }\
 \
-DS_API static inline const name##_node *name##_head_const(const name *self) {\
+ds_API static inline const name##_node *name##_front_const(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->head != NULL);\
     return self->head;\
 }\
 \
-DS_API static inline name##_node *name##_tail(name *self) {\
+ds_API static inline name##_node *name##_back(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->tail != NULL);\
     return self->tail;\
 }\
 \
-DS_API static inline const name##_node *name##_tail_const(const name *self) {\
+ds_API static inline const name##_node *name##_back_const(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->tail != NULL);\
     return self->tail;\
 }\
 \
-DS_API static inline name##_node *name##_get(name *self, ds_size index) {\
+ds_API static inline name##_node *name##_get(name *self, ds_size index) {\
     ds_assert(self != NULL);\
     ds_assert(index < self->count);\
     name##_node *node;\
@@ -148,7 +210,7 @@ DS_API static inline name##_node *name##_get(name *self, ds_size index) {\
     return node;\
 }\
 \
-DS_API static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
+ds_API static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
     ds_assert(self != NULL);\
     ds_assert(index < self->count);\
     const name##_node *node;\
@@ -170,7 +232,7 @@ DS_API static inline const name##_node *name##_get_const(const name *self, ds_si
     return node;\
 }\
 \
-DS_API static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
+ds_API static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -190,7 +252,7 @@ DS_API static inline name##_node *name##_insert_before(name *self, name##_node *
     return new_node;\
 }\
 \
-DS_API static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
+ds_API static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -210,7 +272,7 @@ DS_API static inline name##_node *name##_insert_after(name *self, name##_node *n
     return new_node;\
 }\
 \
-DS_API static inline void name##_erase(name *self, name##_node *node) {\
+ds_API static inline void name##_erase(name *self, name##_node *node) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -231,7 +293,7 @@ DS_API static inline void name##_erase(name *self, name##_node *node) {\
     ds_free(node);\
 }\
 \
-DS_API static inline name##_node *name##_push_front(name *self, T data) {\
+ds_API static inline name##_node *name##_push_front(name *self, T data) {\
     ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
@@ -251,7 +313,7 @@ DS_API static inline name##_node *name##_push_front(name *self, T data) {\
     return node;\
 }\
 \
-DS_API static inline name##_node *name##_push_back(name *self, T data) {\
+ds_API static inline name##_node *name##_push_back(name *self, T data) {\
     ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
@@ -271,7 +333,7 @@ DS_API static inline name##_node *name##_push_back(name *self, T data) {\
     return node;\
 }\
 \
-DS_API static inline name name##_copy(const name *list) {\
+ds_API static inline name name##_copy(const name *list) {\
     ds_assert(list != NULL);\
     name self = (name) {\
         0,\
@@ -287,7 +349,7 @@ DS_API static inline name name##_copy(const name *list) {\
     return self;\
 }\
 \
-DS_API static inline void name##_pop_front(name *self) {\
+ds_API static inline void name##_pop_front(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
@@ -305,7 +367,7 @@ DS_API static inline void name##_pop_front(name *self) {\
     }\
 }\
 \
-DS_API static inline void name##_pop_back(name *self) {\
+ds_API static inline void name##_pop_back(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
@@ -323,7 +385,7 @@ DS_API static inline void name##_pop_back(name *self) {\
     }\
 }\
 \
-DS_API static inline void name##_clear(name *self) {\
+ds_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     name##_node *current = self->head;\
     while (current != NULL) {\
@@ -337,7 +399,7 @@ DS_API static inline void name##_clear(name *self) {\
     self->tail = NULL;\
 }\
 \
-DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
+ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     const name##_node *current = self->head;\
@@ -347,13 +409,14 @@ DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     }\
 }\
 \
-DS_API static inline void name##_delete(name *self) {\
+ds_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\
 }
 
 /** Declares a doubly linked list of the given type. */
-#define DECLARE_LIST(T, deleter) DECLARE_LIST_NAMED(T##_list, T, deleter)
+#define ds_DECLARE_LIST(T, deleter)\
+        ds_DECLARE_LIST_NAMED(T##_list, T, deleter)
 
 #endif // DS_LIST_H

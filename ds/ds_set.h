@@ -3,7 +3,41 @@
 // by Kyle Furey
 
 /**
+ * ds_set.h
  *
+ * set          set_new             ( void )
+ *
+ * set          set_copy            ( const set* self )
+ *
+ * size_t       set_count           ( const set* self )
+ *
+ * bool         set_empty           ( const set* self )
+ *
+ * const T*     set_least           ( const set* self )
+ *
+ * const T*     set_greatest        ( const set* self )
+ *
+ * const T*     set_find            ( const set* self, T data )
+ *
+ * bool         set_contains        ( const set* self, T data )
+ *
+ * bool         set_insert          ( set* self, T data )
+ *
+ * bool         set_erase           ( set* self, T data )
+ *
+ * bool         set_subset          ( const set* self, const set* set, bool or_equal )
+ *
+ * set*         set_union           ( set* self, const set* set )
+ *
+ * set*         set_intersect       ( set* self, const set* set )
+ *
+ * set*         set_difference      ( set* self, const set* set )
+ *
+ * void         set_clear           ( set* self )
+ *
+ * void         set_foreach         ( const set* self, void (*action)(T) )
+ *
+ * void         set_delete          ( set* self )
  */
 
 #ifndef DS_SET_H

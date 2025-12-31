@@ -3,7 +3,35 @@
 // by Kyle Furey
 
 /**
+ * ds_queue.h
  *
+ * queue        queue_new           ( void )
+ *
+ * queue        queue_copy          ( const queue* self )
+ *
+ * size_t       queue_count         ( const queue* self )
+ *
+ * bool         queue_empty         ( const queue* self )
+ *
+ * T*           queue_next          ( queue* self )
+ *
+ * const T*     queue_next_const    ( const queue* self )
+ *
+ * T*           queue_last          ( queue* self )
+ *
+ * const T*     queue_last_const    ( const queue* self )
+ *
+ * void         queue_push          ( queue* self, T data, P priority )
+ *
+ * void         queue_pop_first     ( queue* self )
+ *
+ * void         queue_pop_last      ( queue* self )
+ *
+ * void         queue_clear         ( queue* self )
+ *
+ * void         queue_foreach       ( const queue* self, void (*action)(T) )
+ *
+ * void         queue_delete        ( queue* self )
  */
 
 #ifndef DS_QUEUE_H

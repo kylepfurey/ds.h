@@ -3,7 +3,45 @@
 // by Kyle Furey
 
 /**
+ * ds_vector.h
  *
+ * vector       vector_new          ( size_t capacity )
+ *
+ * vector       vector_copy         ( const vector* vector )
+ *
+ * size_t       vector_count        ( const vector* self )
+ *
+ * size_t       vector_capacity     ( const vector* self )
+ *
+ * bool         vector_empty        ( const vector* self )
+ *
+ * T*           vector_get          ( vector* self, size_t index )
+ *
+ * const T*     vector_get_const    ( const vector* self, size_t index )
+ *
+ * void         vector_resize       ( vector* self, size_t capacity )
+ *
+ * void         vector_insert       ( vector* self, size_t index, T data )
+ *
+ * void         vector_erase        ( vector* self, size_t index )
+ *
+ * void         vector_push         ( vector* self, T data )
+ *
+ * void         vector_pop          ( vector* self )
+ *
+ * T*           vector_reverse      ( vector* self )
+ *
+ * void         vector_clear        ( vector* self )
+ *
+ * T*           vector_map          ( vector* self, T(*transform)(T) )
+ *
+ * size_t       vector_filter       ( vector* self, bool(*predicate)(T) )
+ *
+ * T            vector_reduce       ( vector* self, T start, T(*accumulator)(T, T) )
+ *
+ * void         vector_foreach      ( const vector* self, void(*action)(T) )
+ *
+ * void         vector_delete       ( vector* self )
  */
 
 #ifndef DS_VECTOR_H

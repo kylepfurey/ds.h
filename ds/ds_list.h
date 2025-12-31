@@ -3,7 +3,45 @@
 // by Kyle Furey
 
 /**
+ * ds_list.h
  *
+ * typedef struct {
+ *      T               data;
+ *      list_node*      previous;
+ *      list_node*      next;
+ * } list_node;
+ *
+ * list                 list_new                ( void )
+ *
+ * list                 list_copy               ( const list* self )
+ *
+ * size_t               list_count              ( const list* self )
+ *
+ * bool                 list_empty              ( const list* self )
+ *
+ * list_node*           list_get                ( list* self, size_t index )
+ *
+ * const list_node*     list_get_const          ( const list* self, size_t index )
+ *
+ * list_node*           list_insert_before      ( list* self, list_node* node, T data )
+ *
+ * list_node*           list_insert_after       ( list* self, list_node* node, T data )
+ *
+ * void                 list_erase              ( list* self, list_node* node )
+ *
+ * list_node*           list_push_front         ( list* self, T data )
+ *
+ * list_node*           list_push_back          ( list* self, T data )
+ *
+ * void                 list_pop_front          ( list* self )
+ *
+ * void                 list_pop_back           ( list* self )
+ *
+ * void                 list_clear              ( list* self )
+ *
+ * void                 list_foreach            ( const list* self, void (*action)(T) )
+ *
+ * void                 list_delete             ( list* self )
  */
 
 #ifndef DS_LIST_H

@@ -3,6 +3,8 @@
 // by Kyle Furey
 
 /**
+ * ds.h
+ *
  * This is a C99 header-only data structure library.
  * Each of the following header files provide DECLARE and DECLARE_NAMED macros.
  * These macros are used to generate type-safe data structures.
@@ -12,7 +14,7 @@
  *
  * ds_std.h         - C Standard Library Includes
  * ds_def.h         - ds.h Type, Macro, and Function Declarations
- * ds_allocator.h   - Block Allocator
+ * ds_arena.h       - Block Allocator
  * ds_vector.h      - Dynamic Array
  * ds_string.h      - Mutable String
  * ds_list.h        - Doubly Linked List
@@ -31,7 +33,7 @@
 
 #include "ds/ds_std.h"
 #include "ds/ds_def.h"
-#include "ds/ds_allocator.h"
+#include "ds/ds_arena.h"
 #include "ds/ds_vector.h"
 #include "ds/ds_string.h"
 #include "ds/ds_list.h"

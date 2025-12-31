@@ -3,7 +3,69 @@
 // by Kyle Furey
 
 /**
+ * ds_string.h
  *
+ * string           string_new              ( const char* str )
+ *
+ * string           string_copy             ( const string* str )
+ *
+ * size_t           string_length           ( const string* self )
+ *
+ * size_t           string_capacity         ( const string* self )
+ *
+ * bool             string_empty            ( const string* self )
+ *
+ * char             string_get              ( const string* self, size_t index )
+ *
+ * const char*      string_set              ( string* self, size_t index, char data )
+ *
+ * const char*      string_cstr             ( const string* self )
+ *
+ * const char*      string_substr           ( string* self, size_t start, size_t length )
+ *
+ * int              string_compare          ( const string* self, const char* str )
+ *
+ * void             string_resize           ( string* self, size_t length )
+ *
+ * const char*      string_insert           ( string* self, size_t index, const char* str )
+ *
+ * const char*      string_erase            ( string* self, size_t index, size_t length )
+ *
+ * const char*      string_append           ( string* self, const char* str )
+ *
+ * const char*      string_prepend          ( string* self, const char* str )
+ *
+ * size_t           string_find             ( const string* self, const char* str )
+ *
+ * size_t           string_find_last        ( const string* self, const char* str )
+ *
+ * bool             string_contains         ( const string* self, const char* str )
+ *
+ * const char*      string_replace_first    ( string* self, const char* find, const char* replace )
+ *
+ * const char*      string_replace_last     ( string* self, const char* find, const char* replace )
+ *
+ * const char*      string_replace_all      ( string* self, const char* find, const char* replace )
+ *
+ * const char*      string_reverse          ( string* self )
+ *
+ * const char*      string_upper            ( string* self )
+ *
+ * const char*      string_lower            ( string* self )
+ *
+ * const char*      string_trim             ( string* self, bool resize )
+ *
+ * void             string_clear            ( string* self )
+ *
+ * const char*      string_map              ( string* self, char(*transform)(char) )
+ *
+ * size_t           string_filter           ( string* self, bool(*predicate)(char) )
+ *
+ * char             string_reduce           ( string* self, char start, char(*accumulator)(char, char) )
+ *
+ * void             string_foreach          ( const string* self, void(*action)(char) )
+ *
+ * void             string_delete           ( string* self )
  */
 
 #ifndef DS_STRING_H
@@ -327,7 +389,7 @@ static inline const T *name##_lower(name *self) {\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_trim(name *self) {\
+static inline const T *name##_trim(name *self, bool resize) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -345,7 +407,9 @@ static inline const T *name##_trim(name *self) {\
     }\
     self->buffer.count = length;\
     self->buffer.array[length] = 0;\
-    ds__##name##_vector_resize(&self->buffer, length + 1);\
+    if (resize) {\
+        ds__##name##_vector_resize(&self->buffer, length + 1);\
+    }\
     return self->buffer.array;\
 }\
 \
@@ -403,7 +467,7 @@ static inline void name##_delete(name *self) {\
 /** Declares a mutable string of the given type. */
 #define DECLARE_STRING(T) DECLARE_STRING_NAMED(T##_string, T)
 
-/** Declares the default char string type. */
+/** Declares the default mutable string type. */
 DECLARE_STRING_NAMED(string, char)
 
 #endif // DS_STRING_H

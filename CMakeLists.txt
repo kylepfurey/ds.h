@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 add_executable(ds
         ds/ds_std.h
         ds/ds_def.h
-        ds/ds_allocator.h
+        ds/ds_arena.h
         ds/ds_vector.h
         ds/ds_string.h
         ds/ds_list.h

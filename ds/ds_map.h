@@ -3,7 +3,39 @@
 // by Kyle Furey
 
 /**
+ * ds_map.h
  *
+ * map          map_new             ( size_t capacity )
+ *
+ * map          map_copy            ( const map* self )
+ *
+ * size_t       map_count           ( const map* self )
+ *
+ * size_t       map_capacity        ( const map* self )
+ *
+ * bool         map_empty           ( const map* self )
+ *
+ * V*           map_find            ( map* self, K key )
+ *
+ * const V*     map_find_const      ( const map* self, K key )
+ *
+ * bool         map_contains        ( const map* self, K key )
+ *
+ * void         map_resize          ( map* self, size_t capacity )
+ *
+ * bool         map_insert          ( map* self, K key, V value )
+ *
+ * bool         map_erase           ( map* self, K key )
+ *
+ * void         map_clear           ( map* self )
+ *
+ * void         map_foreach         ( const map* self, void (*action)(K, V) )
+ *
+ * void         map_foreach_key     ( const map* self, void (*action)(K) )
+ *
+ * void         map_foreach_value   ( const map* self, void (*action)(V) )
+ *
+ * void         map_delete          ( map* self )
  */
 
 #ifndef DS_MAP_H

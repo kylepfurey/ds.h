@@ -3,7 +3,19 @@
 // by Kyle Furey
 
 /**
+ * ds_unique.h
  *
+ * unique       unique_new          ( T data )
+ *
+ * unique       unique_copy         ( const unique* unique )
+ *
+ * T*           unique_get          ( unique* self )
+ *
+ * const T*     unique_get_const    ( const unique* self )
+ *
+ * void         unique_reset        ( unique* self, T data )
+ *
+ * void         unique_delete       ( unique* self )
  */
 
 #ifndef DS_UNIQUE_H
@@ -27,7 +39,7 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
-static inline name name##_copy(name *unique) {\
+static inline name name##_copy(const name *unique) {\
     T *self = (T *) ds_malloc(sizeof(T));\
     ds_assert(self != NULL);\
     *self = *unique->data;\

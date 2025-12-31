@@ -3,7 +3,27 @@
 // by Kyle Furey
 
 /**
+ * ds_signal.h
  *
+ * signal           signal_new          ( size_t capacity )
+ *
+ * signal           signal_copy         ( const signal* signal )
+ *
+ * size_t           signal_count        ( const signal* self )
+ *
+ * size_t           signal_empty        ( const signal* self )
+ *
+ * bool             signal_bound        ( const signal* self, signal_handle handle )
+ *
+ * signal_handle    signal_bind         ( signal* self, T* target, signal_func func )
+ *
+ * void             signal_unbind       ( signal* self, signal_handle handle )
+ *
+ * macro            signal_invoke       ( signal* self, args... )
+ *
+ * void             signal_clear        ( signal* self )
+ *
+ * void             signal_delete       ( signal* self )
  */
 
 #ifndef DS_SIGNAL_H

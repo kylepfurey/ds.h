@@ -3,7 +3,21 @@
 // by Kyle Furey
 
 /**
+ * ds_weak.h
  *
+ * weak         weak_new            ( shared* shared )
+ *
+ * weak         weak_copy           ( weak* weak )
+ *
+ * size_t       weak_shared_count   ( const weak* self )
+ *
+ * size_t       weak_weak_count     ( const weak* self )
+ *
+ * bool         weak_valid          ( const weak* self )
+ *
+ * shared       weak_upgrade        ( weak* self )
+ *
+ * void         weak_delete         ( weak* self )
  */
 
 #ifndef DS_WEAK_H

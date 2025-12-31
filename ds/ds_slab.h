@@ -3,7 +3,31 @@
 // by Kyle Furey
 
 /**
+ * ds_slab.h
  *
+ * slab         slab_new            ( size_t capacity )
+ *
+ * slab         slab_copy           ( const slab* slab )
+ *
+ * size_t       slab_count          ( const slab* self )
+ *
+ * bool         slab_empty          ( const slab* self )
+ *
+ * bool         slab_valid          ( const slab* self, slab_id id )
+ *
+ * T*           slab_get            ( slab* self, slab_id id )
+ *
+ * const T*     slab_get_const      ( const slab* self, slab_id id )
+ *
+ * slab_id      slab_borrow         ( slab* self, T data )
+ *
+ * void         slab_return         ( slab* self, slab_id id )
+ *
+ * void         slab_clear          ( slab* self )
+ *
+ * void         slab_foreach        ( const slab* self, void(*action)(T) )
+ *
+ * void         slab_delete         ( slab* self )
  */
 
 #ifndef DS_SLAB_H

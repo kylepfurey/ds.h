@@ -3,7 +3,23 @@
 // by Kyle Furey
 
 /**
+ * ds_shared.h
  *
+ * shared       shared_new              ( T data )
+ *
+ * shared       shared_copy             ( shared* shared )
+ *
+ * size_t       shared_shared_count     ( const shared* self )
+ *
+ * size_t       shared_weak_count       ( const shared* self )
+ *
+ * T*           shared_get              ( shared* self )
+ *
+ * const T*     shared_get_const        ( const shared* self )
+ *
+ * void         shared_reset            ( shared* self, T data )
+ *
+ * void         shared_delete           ( shared* self )
  */
 
 #ifndef DS_SHARED_H
@@ -60,16 +76,6 @@ static inline ds_size name##_weak_count(const name *self) {\
     return self->control_block->weak_count;\
 }\
 \
-static inline void name##_reset(name *self, T data) {\
-    ds_assert(self != NULL);\
-    ds__##name##_control_block *control_block = self->control_block;\
-    ds_assert(control_block != NULL);\
-    ds_assert(control_block->shared_count > 0);\
-    ds_assert(control_block->data != NULL);\
-    deleter(control_block->data);\
-    *control_block->data = data;\
-}\
-\
 static inline T *name##_get(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
@@ -86,6 +92,16 @@ static inline const T *name##_get_const(const name *self) {\
     ds_assert(control_block->shared_count > 0);\
     ds_assert(control_block->data != NULL);\
     return control_block->data;\
+}\
+\
+static inline void name##_reset(name *self, T data) {\
+    ds_assert(self != NULL);\
+    ds__##name##_control_block *control_block = self->control_block;\
+    ds_assert(control_block != NULL);\
+    ds_assert(control_block->shared_count > 0);\
+    ds_assert(control_block->data != NULL);\
+    deleter(control_block->data);\
+    *control_block->data = data;\
 }\
 \
 static inline void name##_delete(name *self) {\

@@ -3,6 +3,8 @@
 // by Kyle Furey
 
 /**
+ * ds_std.h
+ *
  * The standard library is included for some data structure operations.
  * Specifically, some functions like memcpy() and memmove() are used for efficiency.
  *

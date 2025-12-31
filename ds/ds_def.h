@@ -3,6 +3,8 @@
 // by Kyle Furey
 
 /**
+ * ds_def.h
+ *
  * This file is used by the ds.h library for declarations.
  * Settings, default parameters, and repeated functionality are defined here.
  *
@@ -10,8 +12,8 @@
  *
  * ds_malloc, ds_calloc, ds_realloc, and ds_free are ds.h's default allocator functions.
  *
- * ALLOCATOR_ALIGN() is a macro used to align an allocator's memory.
- * ALLOCATOR_LEAK_ASSERT is whether allocator_delete() will assert if memory is "leaked".
+ * ARENA_ALIGN() is a macro used to align an arena's memory.
+ * ARENA_LEAK_ASSERT is whether arena_delete() will assert if memory is "leaked".
  *
  * VECTOR_EXPANSION is a multiplier applied to a vector's capacity to make room.
  *
@@ -61,11 +63,11 @@ __func__, __LINE__, (#cond)), abort(); while (false)
 #define ds_realloc  realloc
 #define ds_free     free
 
-/** Aligns a size for an allocator. */
-#define ALLOCATOR_ALIGN(size, alignment) (((size) + ((alignment) - 1)) & ~((alignment) - 1))
+/** Aligns a size for an arena. */
+#define ARENA_ALIGN(size, alignment) (((size) + ((alignment) - 1)) & ~((alignment) - 1))
 
-/** Whether to assert when a deleted allocator leaks memory. */
-#define ALLOCATOR_LEAK_ASSERT 1
+/** Whether to assert when a deleted arena leaks memory. */
+#define ARENA_LEAK_ASSERT 1
 
 /** The rate to expand vectors at. */
 #define VECTOR_EXPANSION 2

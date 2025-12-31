@@ -5,10 +5,18 @@
 /**
  * ds_list.h
  *
+ * This is a doubly linked list. Data is allocated non-contiguously with pointer links.
+ * This is the only data structure to publicly expose its node type in this library.
+ * This is intentional for O(1) ordered insertions and removals via a node pointer.
+ *
+ * This is a great data structure for stacks, queues, and deques.
+ * Insertion and deletion is fast with direct node references.
+ * Iteration is slower than contiguous containers due to pointer chasing and cache misses.
+ *
  * typedef struct {
- *      T               data;
- *      list_node*      previous;
- *      list_node*      next;
+ *      T                   data;
+ *      list_node* const    previous;
+ *      list_node* const    next;
  * } list_node;
  *
  * list                 list_new                ( void )
@@ -18,6 +26,14 @@
  * size_t               list_count              ( const list* self )
  *
  * bool                 list_empty              ( const list* self )
+ *
+ * list_node*           list_head               ( list* self )
+ *
+ * const list_node*     list_head_const         ( const list* self )
+ *
+ * list_node*           list_tail               ( list* self )
+ *
+ * const list_node*     list_tail_const         ( const list* self )
  *
  * list_node*           list_get                ( list* self, size_t index )
  *
@@ -64,7 +80,7 @@ typedef struct {\
     struct name##_node *tail;\
 } name;\
 \
-static inline name name##_new() {\
+DS_API static inline name name##_new() {\
     return (name) {\
         0,\
         NULL,\
@@ -72,17 +88,45 @@ static inline name name##_new() {\
     };\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->count;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
-static inline name##_node *name##_get(name *self, ds_size index) {\
+DS_API static inline name##_node *name##_head(name *self) {\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
+    ds_assert(self->head != NULL);\
+    return self->head;\
+}\
+\
+DS_API static inline const name##_node *name##_head_const(const name *self) {\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
+    ds_assert(self->head != NULL);\
+    return self->head;\
+}\
+\
+DS_API static inline name##_node *name##_tail(name *self) {\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
+    ds_assert(self->tail != NULL);\
+    return self->tail;\
+}\
+\
+DS_API static inline const name##_node *name##_tail_const(const name *self) {\
+    ds_assert(self != NULL);\
+    ds_assert(self->count > 0);\
+    ds_assert(self->tail != NULL);\
+    return self->tail;\
+}\
+\
+DS_API static inline name##_node *name##_get(name *self, ds_size index) {\
     ds_assert(self != NULL);\
     ds_assert(index < self->count);\
     name##_node *node;\
@@ -104,7 +148,7 @@ static inline name##_node *name##_get(name *self, ds_size index) {\
     return node;\
 }\
 \
-static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
+DS_API static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
     ds_assert(self != NULL);\
     ds_assert(index < self->count);\
     const name##_node *node;\
@@ -126,7 +170,7 @@ static inline const name##_node *name##_get_const(const name *self, ds_size inde
     return node;\
 }\
 \
-static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
+DS_API static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -146,7 +190,7 @@ static inline name##_node *name##_insert_before(name *self, name##_node *node, T
     return new_node;\
 }\
 \
-static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
+DS_API static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -166,7 +210,7 @@ static inline name##_node *name##_insert_after(name *self, name##_node *node, T 
     return new_node;\
 }\
 \
-static inline void name##_erase(name *self, name##_node *node) {\
+DS_API static inline void name##_erase(name *self, name##_node *node) {\
     ds_assert(self != NULL);\
     ds_assert(node != NULL);\
     ds_assert(self->count > 0);\
@@ -187,7 +231,7 @@ static inline void name##_erase(name *self, name##_node *node) {\
     ds_free(node);\
 }\
 \
-static inline name##_node *name##_push_front(name *self, T data) {\
+DS_API static inline name##_node *name##_push_front(name *self, T data) {\
     ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
@@ -207,7 +251,7 @@ static inline name##_node *name##_push_front(name *self, T data) {\
     return node;\
 }\
 \
-static inline name##_node *name##_push_back(name *self, T data) {\
+DS_API static inline name##_node *name##_push_back(name *self, T data) {\
     ds_assert(self != NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
@@ -227,7 +271,7 @@ static inline name##_node *name##_push_back(name *self, T data) {\
     return node;\
 }\
 \
-static inline name name##_copy(const name *list) {\
+DS_API static inline name name##_copy(const name *list) {\
     ds_assert(list != NULL);\
     name self = (name) {\
         0,\
@@ -243,7 +287,7 @@ static inline name name##_copy(const name *list) {\
     return self;\
 }\
 \
-static inline void name##_pop_front(name *self) {\
+DS_API static inline void name##_pop_front(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
@@ -261,7 +305,7 @@ static inline void name##_pop_front(name *self) {\
     }\
 }\
 \
-static inline void name##_pop_back(name *self) {\
+DS_API static inline void name##_pop_back(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
@@ -279,7 +323,7 @@ static inline void name##_pop_back(name *self) {\
     }\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     name##_node *current = self->head;\
     while (current != NULL) {\
@@ -293,7 +337,7 @@ static inline void name##_clear(name *self) {\
     self->tail = NULL;\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(T)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     const name##_node *current = self->head;\
@@ -303,7 +347,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     }\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\

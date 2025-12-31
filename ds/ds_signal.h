@@ -5,6 +5,14 @@
 /**
  * ds_signal.h
  *
+ * Signals are collections of bindings of objects to functions.
+ * These functions share the same signature and the signal can call each function at once.
+ * The signal will pass the same arguments to each function so each object is updated.
+ *
+ * This is excellent for the observer pattern. Binding provides a handle for unbinding.
+ * Objects can opaquely bind to an event and be notified when the event is triggered.
+ * Objects must unbind themselves on destruction to avoid invalid memory access on invoke.
+ *
  * signal           signal_new          ( size_t capacity )
  *
  * signal           signal_copy         ( const signal* signal )
@@ -49,36 +57,36 @@ typedef struct {\
     ds__##name##_slab bindings;\
 } name;\
 \
-static inline name name##_new(ds_size capacity) {\
+DS_API static inline name name##_new(ds_size capacity) {\
     ds_assert(capacity > 0);\
     return (name) {\
         ds__##name##_slab_new(capacity),\
     };\
 }\
 \
-static inline name name##_copy(const name *signal) {\
+DS_API static inline name name##_copy(const name *signal) {\
     ds_assert(signal != NULL);\
     return (name) {\
         ds__##name##_slab_copy(&signal->bindings),\
     };\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->bindings.count;\
 }\
 \
-static inline ds_size name##_empty(const name *self) {\
+DS_API static inline ds_size name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->bindings.count == 0;\
 }\
 \
-static inline bool name##_bound(const name *self, name##_handle handle) {\
+DS_API static inline bool name##_bound(const name *self, name##_handle handle) {\
     ds_assert(self != NULL);\
     return ds__##name##_slab_valid(&self->bindings, (ds__##name##_slab_id) handle);\
 }\
 \
-static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
+DS_API static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
     ds_assert(self != NULL);\
     ds_assert(target != NULL);\
     ds_assert(func != NULL);\
@@ -91,18 +99,18 @@ static inline name##_handle name##_bind(name *self, T *target, name##_func func)
     );\
 }\
 \
-static inline void name##_unbind(name *self, name##_handle handle) {\
+DS_API static inline void name##_unbind(name *self, name##_handle handle) {\
     ds_assert(self != NULL);\
     ds_assert(name##_bound(self, handle));\
     ds__##name##_slab_return(&self->bindings, (ds__##name##_slab_id) handle);\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_slab_clear(&self->bindings);\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_slab_delete(&self->bindings);\
     *self = (name) {0};\

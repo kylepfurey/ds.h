@@ -5,6 +5,14 @@
 /**
  * ds_string.h
  *
+ * Strings are widely used in C but reallocation can be painful and unsafe.
+ * This type is a wrapper for a vector meant for string operations.
+ * It is mutable, meaning memory is owned and the buffer can be modified.
+ *
+ * This is a safe choice for string builders, storing user input, or just general use.
+ * The vector always ensures enough memory is available, the string is null-terminated,
+ * and that the size is cached for fast calculations.
+ *
  * string           string_new              ( const char* str )
  *
  * string           string_copy             ( const string* str )
@@ -76,7 +84,7 @@
 /** Declares a named mutable string of the given type. */
 #define DECLARE_STRING_NAMED(name, T)\
 \
-static inline ds_size ds__##name##_strlen(const T *str) {\
+DS_API static inline ds_size ds__##name##_strlen(const T *str) {\
     ds_assert(str != NULL);\
     ds_size length = 0;\
     while (*str != 0) {\
@@ -86,7 +94,7 @@ static inline ds_size ds__##name##_strlen(const T *str) {\
     return length;\
 }\
 \
-static inline ds_int ds__##name##_strcmp(const T *left, const T *right) {\
+DS_API static inline ds_int ds__##name##_strcmp(const T *left, const T *right) {\
     ds_assert(left != NULL);\
     ds_assert(right != NULL);\
     while (*left != 0 && *right != 0 && (*left == *right)) {\
@@ -96,49 +104,63 @@ static inline ds_int ds__##name##_strcmp(const T *left, const T *right) {\
     return (ds_int) ((ds_uint) *left - (ds_uint) *right);\
 }\
 \
+DS_API static inline ds_int ds__##name##_strncmp(const T *left, const T *right, ds_size length) {\
+    ds_assert(left != NULL);\
+    ds_assert(right != NULL);\
+    for (ds_size i = 0; i < length; ++i) {\
+        if (left[i] != right[i]) {\
+            return (ds_int) ((ds_uint) left[i] - (ds_uint) right[i]);\
+        }\
+        if (left[i] == 0) {\
+            break;\
+        }\
+    }\
+    return 0;\
+}\
+\
 DECLARE_VECTOR_NAMED(ds__##name##_vector, T, void_deleter)\
 \
 typedef struct {\
     ds__##name##_vector buffer;\
 } name;\
 \
-static inline name name##_new(const T *str) {\
+DS_API static inline name name##_new(const T *str) {\
     ds_assert(str != NULL);\
     ds_size length = ds__##name##_strlen(str);\
     name self = (name) {\
         ds__##name##_vector_new(length + 1),\
     };\
-    memcpy(self.buffer.array, str, sizeof(T) * length + 1);\
+    memcpy(self.buffer.array, str, sizeof(T) * (length + 1));\
     self.buffer.count = length;\
     return self;\
 }\
 \
-static inline name name##_copy(const name *str) {\
+DS_API static inline name name##_copy(const name *str) {\
     ds_assert(str != NULL);\
     return (name) {\
         ds__##name##_vector_copy(&str->buffer),\
     };\
 }\
 \
-static inline ds_size name##_length(const name *self) {\
+DS_API static inline ds_size name##_length(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.count;\
 }\
 \
-static inline ds_size name##_capacity(const name *self) {\
+DS_API static inline ds_size name##_capacity(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.capacity;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.count == 0;\
 }\
 \
-static inline T name##_get(const name *self, ds_size index) {\
+DS_API static inline T name##_get(const name *self, ds_size index) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -146,11 +168,14 @@ static inline T name##_get(const name *self, ds_size index) {\
     return self->buffer.array[index];\
 }\
 \
-static inline const T *name##_set(name *self, ds_size index, T data) {\
+DS_API static inline const T *name##_set(name *self, ds_size index, T data) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
     ds_assert(index < self->buffer.count);\
+    if (VECTOR_TRUNC_ASSERT) {\
+        ds_assert(data != 0);\
+    }\
     self->buffer.array[index] = data;\
     if (data == 0) {\
         self->buffer.count = index;\
@@ -158,14 +183,14 @@ static inline const T *name##_set(name *self, ds_size index, T data) {\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_cstr(const name *self) {\
+DS_API static inline const T *name##_cstr(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_substr(name *self, ds_size start, ds_size length) {\
+DS_API static inline const T *name##_substr(name *self, ds_size start, ds_size length) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(start <= self->buffer.count);\
@@ -177,7 +202,7 @@ static inline const T *name##_substr(name *self, ds_size start, ds_size length) 
         return self->buffer.array;\
     }\
     if (start > 0) {\
-        memmove(self->buffer.array, self->buffer.array + start, length);\
+        memmove(self->buffer.array, self->buffer.array + start, sizeof(T) * length);\
     }\
     self->buffer.count = length;\
     self->buffer.array[length] = 0;\
@@ -185,7 +210,7 @@ static inline const T *name##_substr(name *self, ds_size start, ds_size length) 
     return self->buffer.array;\
 }\
 \
-static inline ds_int name##_compare(const name *self, const T *str) {\
+DS_API static inline ds_int name##_compare(const name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
@@ -193,20 +218,24 @@ static inline ds_int name##_compare(const name *self, const T *str) {\
     return ds__##name##_strcmp(self->buffer.array, str);\
 }\
 \
-static inline void name##_resize(name *self, ds_size length) {\
+DS_API static inline void name##_resize(name *self, ds_size length) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
+    if (VECTOR_TRUNC_ASSERT) {\
+        ds_assert(length >= self->buffer.count);\
+    }\
     if (length + 1 > self->buffer.capacity) {\
         ds__##name##_vector_resize(&self->buffer, length + 1);\
     } else if (length < self->buffer.count) {\
+        ds__##name##_vector_resize(&self->buffer, length + 1);\
         self->buffer.count = length;\
         self->buffer.array[length] = 0;\
     }\
     ds_assert(self->buffer.array[self->buffer.count] == 0);\
 }\
 \
-static inline const T *name##_insert(name *self, ds_size index, const T *str) {\
+DS_API static inline const T *name##_insert(name *self, ds_size index, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
@@ -219,15 +248,15 @@ static inline const T *name##_insert(name *self, ds_size index, const T *str) {\
     memmove(\
         self->buffer.array + index + length,\
         self->buffer.array + index,\
-        self->buffer.count - index + 1\
+        sizeof(T) * (self->buffer.count - index + 1)\
     );\
-    memmove(self->buffer.array + index, str, length);\
+    memmove(self->buffer.array + index, str, sizeof(T) * length);\
     self->buffer.count += length;\
     ds_assert(self->buffer.array[self->buffer.count] == 0);\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_erase(name *self, ds_size index, ds_size length) {\
+DS_API static inline const T *name##_erase(name *self, ds_size index, ds_size length) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(index < self->buffer.count);\
@@ -241,28 +270,28 @@ static inline const T *name##_erase(name *self, ds_size index, ds_size length) {
     memmove(\
         self->buffer.array + index,\
         self->buffer.array + index + length,\
-        self->buffer.count - index - length + 1\
+        sizeof(T) * (self->buffer.count - index - length + 1)\
     );\
     self->buffer.count -= length;\
     ds_assert(self->buffer.array[self->buffer.count] == 0);\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_append(name *self, const T *str) {\
+DS_API static inline const T *name##_append(name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return name##_insert(self, self->buffer.count, str);\
 }\
 \
-static inline const T *name##_prepend(name *self, const T *str) {\
+DS_API static inline const T *name##_prepend(name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return name##_insert(self, 0, str);\
 }\
 \
-static inline ds_size name##_find(const name *self, const T *str) {\
+DS_API static inline ds_size name##_find(const name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
@@ -272,14 +301,14 @@ static inline ds_size name##_find(const name *self, const T *str) {\
         return NOT_FOUND;\
     }\
     for (ds_size i = 0; i + length <= self->buffer.count; ++i) {\
-        if (ds__##name##_strcmp(self->buffer.array + i, str) == 0) {\
+        if (ds__##name##_strncmp(self->buffer.array + i, str, length) == 0) {\
             return i;\
         }\
     }\
     return NOT_FOUND;\
 }\
 \
-static inline ds_size name##_find_last(const name *self, const T *str) {\
+DS_API static inline ds_size name##_find_last(const name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
@@ -289,20 +318,20 @@ static inline ds_size name##_find_last(const name *self, const T *str) {\
         return NOT_FOUND;\
     }\
     for (ds_diff i = self->buffer.count - length + 1; i-- > 0;) {\
-        if (ds__##name##_strcmp(self->buffer.array + i, str) == 0) {\
+        if (ds__##name##_strncmp(self->buffer.array + i, str, length) == 0) {\
             return i;\
         }\
     }\
     return NOT_FOUND;\
 }\
 \
-static inline bool name##_contains(const name *self, const T *str) {\
+DS_API static inline bool name##_contains(const name *self, const T *str) {\
     ds_assert(self != NULL);\
     ds_assert(str != NULL);\
     return name##_find(self, str) != NOT_FOUND;\
 }\
 \
-static inline const T *name##_replace_first(name *self, const T *find, const T *replace) {\
+DS_API static inline const T *name##_replace_first(name *self, const T *find, const T *replace) {\
     ds_assert(self != NULL);\
     ds_assert(find != NULL);\
     ds_assert(replace != NULL);\
@@ -318,7 +347,7 @@ static inline const T *name##_replace_first(name *self, const T *find, const T *
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_replace_last(name *self, const T *find, const T *replace) {\
+DS_API static inline const T *name##_replace_last(name *self, const T *find, const T *replace) {\
     ds_assert(self != NULL);\
     ds_assert(find != NULL);\
     ds_assert(replace != NULL);\
@@ -334,7 +363,7 @@ static inline const T *name##_replace_last(name *self, const T *find, const T *r
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_replace_all(name *self, const T *find, const T *replace) {\
+DS_API static inline const T *name##_replace_all(name *self, const T *find, const T *replace) {\
     ds_assert(self != NULL);\
     ds_assert(find != NULL);\
     ds_assert(replace != NULL);\
@@ -347,11 +376,12 @@ static inline const T *name##_replace_all(name *self, const T *find, const T *re
     }\
     ds_size start = 0;\
     while (start <= self->buffer.count - find_len) {\
+        ds_assert(start <= self->buffer.count);\
         self->buffer.array += start;\
         self->buffer.count -= start;\
         ds_size index = name##_find(self, find);\
-        self->buffer.array -= start;\
         self->buffer.count += start;\
+        self->buffer.array -= start;\
         if (index == NOT_FOUND) {\
             break;\
         }\
@@ -364,12 +394,12 @@ static inline const T *name##_replace_all(name *self, const T *find, const T *re
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_reverse(name *self) {\
+DS_API static inline const T *name##_reverse(name *self) {\
     ds_assert(self != NULL);\
     return ds__##name##_vector_reverse(&self->buffer);\
 }\
 \
-static inline const T *name##_upper(name *self) {\
+DS_API static inline const T *name##_upper(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -379,7 +409,7 @@ static inline const T *name##_upper(name *self) {\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_lower(name *self) {\
+DS_API static inline const T *name##_lower(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -389,7 +419,7 @@ static inline const T *name##_lower(name *self) {\
     return self->buffer.array;\
 }\
 \
-static inline const T *name##_trim(name *self, bool resize) {\
+DS_API static inline const T *name##_trim(name *self, bool resize) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -403,7 +433,7 @@ static inline const T *name##_trim(name *self, bool resize) {\
     }\
     ds_size length = end - start;\
     if (start > 0 && length > 0) {\
-        memmove(self->buffer.array, self->buffer.array + start, length);\
+        memmove(self->buffer.array, self->buffer.array + start, sizeof(T) * (length));\
     }\
     self->buffer.count = length;\
     self->buffer.array[length] = 0;\
@@ -413,7 +443,7 @@ static inline const T *name##_trim(name *self, bool resize) {\
     return self->buffer.array;\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
@@ -421,13 +451,16 @@ static inline void name##_clear(name *self) {\
     self->buffer.array[0] = 0;\
 }\
 \
-static inline const T *name##_map(name *self, T(*transform)(T)) {\
+DS_API static inline const T *name##_map(name *self, T(*transform)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(transform != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != NULL);\
     for (ds_size i = 0; i < self->buffer.count; ++i) {\
         self->buffer.array[i] = transform(self->buffer.array[i]);\
+        if (VECTOR_TRUNC_ASSERT) {\
+            ds_assert(self->buffer.array[i] != 0);\
+        }\
         if (self->buffer.array[i] == 0) {\
             self->buffer.count = i;\
             break;\
@@ -436,7 +469,7 @@ static inline const T *name##_map(name *self, T(*transform)(T)) {\
     return self->buffer.array;\
 }\
 \
-static inline ds_size name##_filter(name *self, bool(*predicate)(T)) {\
+DS_API static inline ds_size name##_filter(name *self, bool(*predicate)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(predicate != NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
@@ -446,19 +479,19 @@ static inline ds_size name##_filter(name *self, bool(*predicate)(T)) {\
     return count;\
 }\
 \
-static inline T name##_reduce(name *self, T start, T(*accumulator)(T, T)) {\
+DS_API static inline T name##_reduce(name *self, T start, T(*accumulator)(T, T)) {\
     ds_assert(self != NULL);\
     ds_assert(accumulator != NULL);\
     return ds__##name##_vector_reduce(&self->buffer, start, accumulator);\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(T)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     ds__##name##_vector_foreach(&self->buffer, action);\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_vector_delete(&self->buffer);\
     *self = (name) {0};\

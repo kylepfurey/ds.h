@@ -5,6 +5,13 @@
 /**
  * ds_map.h
  *
+ * This is a simple open addressing key-value hash map.
+ * Values are stored in buckets in an underlying vector.
+ * Values are indexed by hashing their key type into a number for near O(1) operations.
+ * This number is used to probe for finding where an element may be quickly.
+ *
+ * It's one of the fastest options for storing, finding, and removing key-value pairs.
+ *
  * map          map_new             ( size_t capacity )
  *
  * map          map_copy            ( const map* self )
@@ -59,7 +66,7 @@ typedef struct {\
     ds__##name##_vector buckets;\
 } name;\
 \
-static inline name name##_new(ds_size capacity) {\
+DS_API static inline name name##_new(ds_size capacity) {\
     ds_assert(capacity > 0);\
     name self = (name) {\
         0,\
@@ -69,7 +76,7 @@ static inline name name##_new(ds_size capacity) {\
     return self;\
 }\
 \
-static inline name name##_copy(const name *map) {\
+DS_API static inline name name##_copy(const name *map) {\
     ds_assert(map != NULL);\
     name self = (name) {\
         map->count,\
@@ -79,22 +86,22 @@ static inline name name##_copy(const name *map) {\
     return self;\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->count;\
 }\
 \
-static inline ds_size name##_capacity(const name *self) {\
+DS_API static inline ds_size name##_capacity(const name *self) {\
     ds_assert(self != NULL);\
     return self->buckets.capacity;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
-static inline V *name##_find(name *self, K key) {\
+DS_API static inline V *name##_find(name *self, K key) {\
     ds_assert(self != NULL);\
     ds_assert(self->buckets.array != NULL);\
     ds_size hash = (key_hasher);\
@@ -120,7 +127,7 @@ static inline V *name##_find(name *self, K key) {\
     return NULL;\
 }\
 \
-static inline const V *name##_find_const(const name *self, K key) {\
+DS_API static inline const V *name##_find_const(const name *self, K key) {\
     ds_assert(self != NULL);\
     ds_assert(self->buckets.array != NULL);\
     ds_size hash = (key_hasher);\
@@ -146,12 +153,12 @@ static inline const V *name##_find_const(const name *self, K key) {\
     return NULL;\
 }\
 \
-static inline bool name##_contains(const name *self, K key) {\
+DS_API static inline bool name##_contains(const name *self, K key) {\
     ds_assert(self != NULL);\
     return name##_find_const(self, key) != NULL;\
 }\
 \
-static inline void name##_resize(name *self, ds_size capacity) {\
+DS_API static inline void name##_resize(name *self, ds_size capacity) {\
     ds_assert(self != NULL);\
     ds_assert(capacity >= self->count);\
     if (capacity == self->count) {\
@@ -185,7 +192,7 @@ static inline void name##_resize(name *self, ds_size capacity) {\
     self->buckets.array = array;\
 }\
 \
-static inline bool name##_insert(name *self, K key, V value) {\
+DS_API static inline bool name##_insert(name *self, K key, V value) {\
     ds_assert(self != NULL);\
     ds_assert(self->buckets.array != NULL);\
     if (MAP_LOAD_FACTOR_DEN * (self->count + 1) > MAP_LOAD_FACTOR_NUM * self->buckets.capacity) {\
@@ -233,7 +240,7 @@ static inline bool name##_insert(name *self, K key, V value) {\
     }\
 }\
 \
-static inline bool name##_erase(name *self, K key) {\
+DS_API static inline bool name##_erase(name *self, K key) {\
     ds_assert(self != NULL);\
     ds_assert(self->buckets.array != NULL);\
     ds_size hash = (key_hasher);\
@@ -262,7 +269,7 @@ static inline bool name##_erase(name *self, K key) {\
     return false;\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->buckets.array != NULL);\
     for (ds_size i = 0; self->count > 0 && i < self->buckets.capacity; ++i) {\
@@ -276,7 +283,7 @@ static inline void name##_clear(name *self) {\
     memset(self->buckets.array, 0, sizeof(ds__##name##_bucket) * self->buckets.capacity);\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(K, V)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(K, V)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     ds_assert(self->buckets.array != NULL);\
@@ -292,7 +299,7 @@ static inline void name##_foreach(const name *self, void(*action)(K, V)) {\
     ds_assert(remaining == 0);\
 }\
 \
-static inline void name##_foreach_key(const name *self, void(*action)(K)) {\
+DS_API static inline void name##_foreach_key(const name *self, void(*action)(K)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     ds_assert(self->buckets.array != NULL);\
@@ -308,7 +315,7 @@ static inline void name##_foreach_key(const name *self, void(*action)(K)) {\
     ds_assert(remaining == 0);\
 }\
 \
-static inline void name##_foreach_value(const name *self, void(*action)(V)) {\
+DS_API static inline void name##_foreach_value(const name *self, void(*action)(V)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     ds_assert(self->buckets.array != NULL);\
@@ -324,7 +331,7 @@ static inline void name##_foreach_value(const name *self, void(*action)(V)) {\
     ds_assert(remaining == 0);\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     ds__##name##_vector_delete(&self->buckets);\

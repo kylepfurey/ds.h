@@ -6,12 +6,12 @@
  * ds_arena.h
  *
  * This is a simple block allocator. It allocates a buffer and is divided per allocation.
- * This is the only data structure that does not require a declared type.
+ * This allocator is type-agnostic and operates with raw memory to create new objects.
  * Allocations are made at runtime using arena_malloc().
  *
- * This is a fantastic alternative to malloc() if you want to limit heap memory.
+ * This is a fantastic alternative to malloc() if you want deterministic heap memory.
  *
- * Creates a new arena with <size> number of bytes.
+ * Creates a new arena with at least <size> bytes of aligned memory.
  * arena    arena_new       ( size_t size )
  *
  * Allocates at least <size> number of the bytes. Returns a new pointer or NULL.
@@ -53,9 +53,10 @@ typedef struct {\
     ds__##name##_block *free;\
 } name;\
 \
-static inline name name##_new(ds_size size) {\
+DS_API static inline name name##_new(ds_size size) {\
     ds_assert(size >= ds__##name##_block_SIZE + (alignment));\
     size = ARENA_ALIGN(size, (alignment));\
+    size += ds__##name##_block_SIZE;\
     void *start = ds_malloc(size);\
     ds_assert(start != NULL);\
     name self = (name) {\
@@ -68,7 +69,7 @@ static inline name name##_new(ds_size size) {\
     return self;\
 }\
 \
-static inline void *name##_malloc(name *self, ds_size size) {\
+DS_API static inline void *name##_malloc(name *self, ds_size size) {\
     ds_assert(self != NULL);\
     if (size == 0) {\
         return NULL;\
@@ -93,7 +94,7 @@ static inline void *name##_malloc(name *self, ds_size size) {\
     return NULL;\
 }\
 \
-static inline void name##_free(name *self, void *ptr) {\
+DS_API static inline void name##_free(name *self, void *ptr) {\
     ds_assert(self != NULL);\
     ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
@@ -123,7 +124,7 @@ static inline void name##_free(name *self, void *ptr) {\
     }\
 }\
 \
-static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
+DS_API static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
     ds_assert(self != NULL);\
     ds_assert(size == 0 || count <= SIZE_MAX / size);\
     ds_size total = count * size;\
@@ -134,7 +135,7 @@ static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
     return ptr;\
 }\
 \
-static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
+DS_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
     ds_assert(self != NULL);\
     ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
     if (ptr == NULL) {\
@@ -158,7 +159,7 @@ static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
     return new_ptr;\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->start != NULL);\
     if (ARENA_LEAK_ASSERT) {\
@@ -174,7 +175,7 @@ static inline void name##_delete(name *self) {\
 }
 
 /** Declares a block allocator with the alignment of the given type. */
-#define DECLARE_ARENA(T) DECLARE_ARENA_NAMED(T##_arena, sizeof(T))
+#define DECLARE_ARENA(T_aligned) DECLARE_ARENA_NAMED(T_aligned##_arena, sizeof(T_aligned))
 
 /** Declares the default block allocator type. */
 DECLARE_ARENA_NAMED(arena, sizeof(void *))

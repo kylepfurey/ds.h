@@ -16,6 +16,7 @@
  * ARENA_LEAK_ASSERT is whether arena_delete() will assert if memory is "leaked".
  *
  * VECTOR_EXPANSION is a multiplier applied to a vector's capacity to make room.
+ * VECTOR_TRUNC_ASSERT is whether vector_resize() will assert when deleting elements.
  *
  * MAP_LOAD_FACTOR_NUM / MAP_LOAD_FACTOR_DEN is the maximum percentage a map can be filled.
  * When the map's capacity is greater than this fraction, it will rehash its values.
@@ -37,7 +38,7 @@
  *
  * ds_byte, ds_int, ds_uint, ds_size, ds_diff are type aliases used internally.
  *
- * void_deleter() is a noop deleter function used for data structures with trivial types.
+ * void_deleter() is a no-op deleter function used for data structures with trivial types.
  *
  * ds_hashify() is a generic Fowler-Noll-Vo implementation for hashing keys.
  */
@@ -72,6 +73,9 @@ __func__, __LINE__, (#cond)), abort(); while (false)
 /** The rate to expand vectors at. */
 #define VECTOR_EXPANSION 2
 
+/** Whether to assert when vectors (and strings) delete elements on resize. */
+#define VECTOR_TRUNC_ASSERT 1
+
 /** The maximum fill capacity before rehashing a map. */
 #define MAP_LOAD_FACTOR ((double) MAP_LOAD_FACTOR_NUM / (double) MAP_LOAD_FACTOR_DEN)
 #define MAP_LOAD_FACTOR_NUM 1
@@ -88,6 +92,9 @@ __func__, __LINE__, (#cond)), abort(); while (false)
 /** An index indicating something was not found. */
 #define NOT_FOUND ((ds_size) -1)
 
+/** A tag for generated functions indicating they are from the ds.h library. */
+#define DS_API
+
 /** Each state in a hash map bucket. */
 typedef enum {
     BUCKET_EMPTY = 0,
@@ -103,12 +110,12 @@ typedef     size_t          ds_size;
 typedef     ptrdiff_t       ds_diff;
 
 /** A no-op deleter function for trivial types. */
-static inline void void_deleter(void *self) {
+DS_API static inline void void_deleter(void *self) {
     (void) self;
 }
 
 /** Hashes any data as an array of bytes. */
-static inline ds_size ds_hashify(ds_size size, const void *data) {
+DS_API static inline ds_size ds_hashify(ds_size size, const void *data) {
     ds_assert(data != NULL);
     // FNV-1a
     const ds_byte *memory = (ds_byte *) data;

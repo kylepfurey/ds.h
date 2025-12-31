@@ -5,13 +5,19 @@
 /**
  * ds_shared.h
  *
+ * This is a reference counted pointer that ensures memory is freed when shared_count is 0.
+ * Shared references create slight indirection for ensuring shared ownership of memory.
+ *
+ * When memory is accessed from multiple contexts in a program, a shared reference ensures
+ * the memory is freed only after all owners are done with it.
+ *
  * shared       shared_new              ( T data )
  *
  * shared       shared_copy             ( shared* shared )
  *
- * size_t       shared_shared_count     ( const shared* self )
+ * uint         shared_shared_count     ( const shared* self )
  *
- * size_t       shared_weak_count       ( const shared* self )
+ * uint         shared_weak_count       ( const shared* self )
  *
  * T*           shared_get              ( shared* self )
  *
@@ -31,8 +37,8 @@
 #define DECLARE_SHARED_NAMED(name, T, deleter)\
 \
 typedef struct {\
-    ds_size shared_count;\
-    ds_size weak_count;\
+    ds_uint shared_count;\
+    ds_uint weak_count;\
     T *data;\
 } ds__##name##_control_block;\
 \
@@ -40,7 +46,7 @@ typedef struct {\
     ds__##name##_control_block *control_block;\
 } name;\
 \
-static inline name name##_new(T data) {\
+DS_API static inline name name##_new(T data) {\
     ds__##name##_control_block *control_block =\
     (ds__##name##_control_block *) ds_malloc(sizeof(ds__##name##_control_block));\
     ds_assert(control_block != NULL);\
@@ -54,7 +60,7 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
-static inline name name##_copy(name *shared) {\
+DS_API static inline name name##_copy(name *shared) {\
     ds_assert(shared != NULL);\
     ds__##name##_control_block *control_block = shared->control_block;\
     ds_assert(control_block != NULL);\
@@ -64,19 +70,19 @@ static inline name name##_copy(name *shared) {\
     return *shared;\
 }\
 \
-static inline ds_size name##_shared_count(const name *self) {\
+DS_API static inline ds_uint name##_shared_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->shared_count;\
 }\
 \
-static inline ds_size name##_weak_count(const name *self) {\
+DS_API static inline ds_uint name##_weak_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->weak_count;\
 }\
 \
-static inline T *name##_get(name *self) {\
+DS_API static inline T *name##_get(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -85,7 +91,7 @@ static inline T *name##_get(name *self) {\
     return control_block->data;\
 }\
 \
-static inline const T *name##_get_const(const name *self) {\
+DS_API static inline const T *name##_get_const(const name *self) {\
     ds_assert(self != NULL);\
     const ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -94,7 +100,7 @@ static inline const T *name##_get_const(const name *self) {\
     return control_block->data;\
 }\
 \
-static inline void name##_reset(name *self, T data) {\
+DS_API static inline void name##_reset(name *self, T data) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\
@@ -104,7 +110,7 @@ static inline void name##_reset(name *self, T data) {\
     *control_block->data = data;\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_control_block *control_block = self->control_block;\
     ds_assert(control_block != NULL);\

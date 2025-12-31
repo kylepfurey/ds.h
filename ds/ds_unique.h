@@ -5,9 +5,13 @@
 /**
  * ds_unique.h
  *
- * unique       unique_new          ( T data )
+ * This is a wrapper over heap memory that aims to explicitly state who owns it.
+ * Unique references must always be freed at the end of the scope they are created.
  *
- * unique       unique_copy         ( const unique* unique )
+ * This a cleaner way of indicating who owns memory over raw pointers.
+ * The wrapper over the actual pointer leaves zero overhead with clear ownership.
+ *
+ * unique       unique_new          ( T data )
  *
  * T*           unique_get          ( unique* self )
  *
@@ -30,7 +34,7 @@ typedef struct {\
     T *data;\
 } name;\
 \
-static inline name name##_new(T data) {\
+DS_API static inline name name##_new(T data) {\
     T *self = (T *) ds_malloc(sizeof(T));\
     ds_assert(self != NULL);\
     *self = data;\
@@ -39,35 +43,26 @@ static inline name name##_new(T data) {\
     };\
 }\
 \
-static inline name name##_copy(const name *unique) {\
-    T *self = (T *) ds_malloc(sizeof(T));\
-    ds_assert(self != NULL);\
-    *self = *unique->data;\
-    return (name) {\
-        self,\
-    };\
-}\
-\
-static inline T *name##_get(name *self) {\
+DS_API static inline T *name##_get(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->data != NULL);\
     return self->data;\
 }\
 \
-static inline const T *name##_get_const(const name *self) {\
+DS_API static inline const T *name##_get_const(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->data != NULL);\
     return self->data;\
 }\
 \
-static inline void name##_reset(name *self, T data) {\
+DS_API static inline void name##_reset(name *self, T data) {\
     ds_assert(self != NULL);\
     ds_assert(self->data != NULL);\
     deleter(self->data);\
     *self->data = data;\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->data != NULL);\
     deleter(self->data);\

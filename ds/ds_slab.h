@@ -5,6 +5,12 @@
 /**
  * ds_slab.h
  *
+ * This is a slab allocator. It is a mapping of IDs to same-size objects in a buffer.
+ * Slab allocation is useful for reusing memory when large objects are being reallocated.
+ *
+ * Lightweight IDs ensure O(1) access to the memory and a way to quickly return it.
+ * Borrowing has the potential to resize the buffer, so use IDs to refresh pointers often.
+ *
  * slab         slab_new            ( size_t capacity )
  *
  * slab         slab_copy           ( const slab* slab )
@@ -56,7 +62,7 @@ typedef struct {\
     ds__##name##_vector buckets;\
 } name;\
 \
-static inline name name##_new(ds_size capacity) {\
+DS_API static inline name name##_new(ds_size capacity) {\
     ds_assert(capacity > 0);\
     return (name) {\
         0,\
@@ -68,7 +74,7 @@ static inline name name##_new(ds_size capacity) {\
     };\
 }\
 \
-static inline name name##_copy(const name *slab) {\
+DS_API static inline name name##_copy(const name *slab) {\
     ds_assert(slab != NULL);\
     return (name) {\
         slab->count,\
@@ -77,17 +83,17 @@ static inline name name##_copy(const name *slab) {\
     };\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->count;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
-static inline bool name##_valid(const name *self, name##_id id) {\
+DS_API static inline bool name##_valid(const name *self, name##_id id) {\
     ds_assert(self != NULL);\
     const ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
@@ -99,7 +105,7 @@ static inline bool name##_valid(const name *self, name##_id id) {\
     return age != 0 && age == id.age;\
 }\
 \
-static inline T *name##_get(name *self, name##_id id) {\
+DS_API static inline T *name##_get(name *self, name##_id id) {\
     ds_assert(self != NULL);\
     ds_assert(name##_valid(self, id));\
     ds__##name##_vector *vector = &self->buckets;\
@@ -109,7 +115,7 @@ static inline T *name##_get(name *self, name##_id id) {\
     return &vector->array[id.index].data;\
 }\
 \
-static inline const T *name##_get_const(const name *self, name##_id id) {\
+DS_API static inline const T *name##_get_const(const name *self, name##_id id) {\
     ds_assert(self != NULL);\
     ds_assert(name##_valid(self, id));\
     const ds__##name##_vector *vector = &self->buckets;\
@@ -119,7 +125,7 @@ static inline const T *name##_get_const(const name *self, name##_id id) {\
     return &vector->array[id.index].data;\
 }\
 \
-static inline name##_id name##_borrow(name *self, T data) {\
+DS_API static inline name##_id name##_borrow(name *self, T data) {\
     ds_assert(self != NULL);\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
@@ -149,7 +155,7 @@ static inline name##_id name##_borrow(name *self, T data) {\
     return id;\
 }\
 \
-static inline void name##_return(name *self, name##_id id) {\
+DS_API static inline void name##_return(name *self, name##_id id) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(name##_valid(self, id));\
@@ -165,7 +171,7 @@ static inline void name##_return(name *self, name##_id id) {\
     vector->array[id.index].age = 0;\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
@@ -191,7 +197,7 @@ static inline void name##_clear(name *self) {\
     };\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(T)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     const ds__##name##_vector *vector = &self->buckets;\
@@ -208,7 +214,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(remaining == 0);\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     ds__##name##_vector_delete(&self->buckets);\

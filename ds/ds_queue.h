@@ -5,33 +5,40 @@
 /**
  * ds_queue.h
  *
- * queue        queue_new           ( void )
+ * This is a double-ended priority queue. It's a linked list with automatic ordering.
+ * Elements are sorted via a priority value. The first and last element are O(1) accessible.
+ * If you don't need priority ordering, use a regular linked list or vector.
  *
- * queue        queue_copy          ( const queue* self )
+ * This is excellent for frontiers when doing small graph searches,
+ * or collecting elements for processing in-order later.
  *
- * size_t       queue_count         ( const queue* self )
+ * queue        queue_new               ( void )
  *
- * bool         queue_empty         ( const queue* self )
+ * queue        queue_copy              ( const queue* self )
  *
- * T*           queue_next          ( queue* self )
+ * size_t       queue_count             ( const queue* self )
  *
- * const T*     queue_next_const    ( const queue* self )
+ * bool         queue_empty             ( const queue* self )
  *
- * T*           queue_last          ( queue* self )
+ * T*           queue_first             ( queue* self )
  *
- * const T*     queue_last_const    ( const queue* self )
+ * const T*     queue_first_const       ( const queue* self )
  *
- * void         queue_push          ( queue* self, T data, P priority )
+ * T*           queue_last              ( queue* self )
  *
- * void         queue_pop_first     ( queue* self )
+ * const T*     queue_last_const        ( const queue* self )
  *
- * void         queue_pop_last      ( queue* self )
+ * void         queue_push              ( queue* self, T data, P priority )
  *
- * void         queue_clear         ( queue* self )
+ * void         queue_pop_first         ( queue* self )
  *
- * void         queue_foreach       ( const queue* self, void (*action)(T) )
+ * void         queue_pop_last          ( queue* self )
  *
- * void         queue_delete        ( queue* self )
+ * void         queue_clear             ( queue* self )
+ *
+ * void         queue_foreach           ( const queue* self, void (*action)(T) )
+ *
+ * void         queue_delete            ( queue* self )
  */
 
 #ifndef DS_QUEUE_H
@@ -53,25 +60,25 @@ typedef struct {\
     ds__##name##_list queue;\
 } name;\
 \
-static inline name name##_new() {\
+DS_API static inline name name##_new() {\
     return (name) {\
         ds__##name##_list_new(),\
     };\
 }\
 \
-static inline name name##_copy(const name *queue) {\
+DS_API static inline name name##_copy(const name *queue) {\
     ds_assert(queue != NULL);\
     return (name) {\
         ds__##name##_list_copy(&queue->queue),\
     };\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->queue.count;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert((self->queue.count == 0) ==\
            ((self->queue.head == NULL) &&\
@@ -79,35 +86,35 @@ static inline bool name##_empty(const name *self) {\
     return self->queue.count == 0;\
 }\
 \
-static inline T *name##_next(name *self) {\
+DS_API static inline T *name##_first(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.head != NULL);\
     return &self->queue.head->data.data;\
 }\
 \
-static inline const T *name##_next_const(const name *self) {\
+DS_API static inline const T *name##_first_const(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.head != NULL);\
     return &self->queue.head->data.data;\
 }\
 \
-static inline T *name##_last(name *self) {\
+DS_API static inline T *name##_last(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.tail != NULL);\
     return &self->queue.tail->data.data;\
 }\
 \
-static inline const T *name##_last_const(const name *self) {\
+DS_API static inline const T *name##_last_const(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.tail != NULL);\
     return &self->queue.tail->data.data;\
 }\
 \
-static inline void name##_push(name *self, T data, P priority) {\
+DS_API static inline void name##_push(name *self, T data, P priority) {\
     ds_assert(self != NULL);\
     if (self->queue.head == NULL) {\
         ds__##name##_list_push_front(\
@@ -146,7 +153,7 @@ static inline void name##_push(name *self, T data, P priority) {\
     );\
 }\
 \
-static inline void name##_pop_first(name *self) {\
+DS_API static inline void name##_pop_first(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.head != NULL);\
@@ -154,7 +161,7 @@ static inline void name##_pop_first(name *self) {\
     ds__##name##_list_pop_front(&self->queue);\
 }\
 \
-static inline void name##_pop_last(name *self) {\
+DS_API static inline void name##_pop_last(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->queue.count > 0);\
     ds_assert(self->queue.tail != NULL);\
@@ -162,7 +169,7 @@ static inline void name##_pop_last(name *self) {\
     ds__##name##_list_pop_back(&self->queue);\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds__##name##_list_node *current = self->queue.head;\
     while (current != NULL) {\
@@ -172,7 +179,7 @@ static inline void name##_clear(name *self) {\
     ds__##name##_list_clear(&self->queue);\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(T)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     const ds__##name##_list_node *current = self->queue.head;\
@@ -182,7 +189,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     }\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\

@@ -5,6 +5,14 @@
 /**
  * ds_set.h
  *
+ * This is a sorted binary tree that stores a collection of unique elements.
+ * Elements are inserted relative to their neighbors to ensure order is kept.
+ * Sets are great for storing and checking whether an element exists.
+ * Sets can grow large and imbalanced depending on insertion order.
+ *
+ * Sets are great for storing unique values. New elements replace "identical" elements on insert.
+ * Mathematical operations like subset and union allow easy set comparison and combination.
+ *
  * set          set_new             ( void )
  *
  * set          set_copy            ( const set* self )
@@ -59,24 +67,24 @@ typedef struct {\
     ds__##name##_node *root;\
 } name;\
 \
-static inline name name##_new() {\
+DS_API static inline name name##_new() {\
     return (name) {\
         0,\
         NULL,\
     };\
 }\
 \
-static inline ds_size name##_count(const name *self) {\
+DS_API static inline ds_size name##_count(const name *self) {\
     ds_assert(self != NULL);\
     return self->count;\
 }\
 \
-static inline bool name##_empty(const name *self) {\
+DS_API static inline bool name##_empty(const name *self) {\
     ds_assert(self != NULL);\
     return self->count == 0;\
 }\
 \
-static inline const T *name##_least(const name *self) {\
+DS_API static inline const T *name##_least(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->root != NULL);\
@@ -87,7 +95,7 @@ static inline const T *name##_least(const name *self) {\
     return &current->data;\
 }\
 \
-static inline const T *name##_greatest(const name *self) {\
+DS_API static inline const T *name##_greatest(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->count > 0);\
     ds_assert(self->root != NULL);\
@@ -98,7 +106,7 @@ static inline const T *name##_greatest(const name *self) {\
     return &current->data;\
 }\
 \
-static inline const T *name##_find(const name *self, T data) {\
+DS_API static inline const T *name##_find(const name *self, T data) {\
     ds_assert(self != NULL);\
     const ds__##name##_node *current = self->root;\
     ds_assert((current == NULL) == (self->count == 0));\
@@ -117,12 +125,12 @@ static inline const T *name##_find(const name *self, T data) {\
     return NULL;\
 }\
 \
-static inline bool name##_contains(const name *self, T data) {\
+DS_API static inline bool name##_contains(const name *self, T data) {\
     ds_assert(self != NULL);\
     return name##_find(self, data) != NULL;\
 }\
 \
-static inline bool name##_insert(name *self, T data) {\
+DS_API static inline bool name##_insert(name *self, T data) {\
     ds_assert(self != NULL);\
     if (self->root == NULL) {\
         ds_assert(self->count == 0);\
@@ -167,7 +175,7 @@ static inline bool name##_insert(name *self, T data) {\
     }\
 }\
 \
-static inline void ds__##name##_copy(name *self, const ds__##name##_node *node) {\
+DS_API static inline void ds__##name##_copy(name *self, const ds__##name##_node *node) {\
     ds_assert(self != NULL && node != NULL);\
     if (node->left != NULL) {\
         ds__##name##_copy(self, node->left);\
@@ -178,7 +186,7 @@ static inline void ds__##name##_copy(name *self, const ds__##name##_node *node) 
     name##_insert(self, node->data);\
 }\
 \
-static inline name name##_copy(const name *set) {\
+DS_API static inline name name##_copy(const name *set) {\
     ds_assert(set != NULL);\
     ds_assert((set->root == NULL) == (set->count == 0));\
     name self = (name) {\
@@ -192,7 +200,7 @@ static inline name name##_copy(const name *set) {\
     return self;\
 }\
 \
-static inline bool name##_erase(name *self, T data) {\
+DS_API static inline bool name##_erase(name *self, T data) {\
     ds_assert(self != NULL);\
     if (self->root == NULL) {\
         ds_assert(self->count == 0);\
@@ -253,7 +261,7 @@ static inline bool name##_erase(name *self, T data) {\
     }\
 }\
 \
-static inline bool ds__##name##_subset(const name *set, const ds__##name##_node *node) {\
+DS_API static inline bool ds__##name##_subset(const name *set, const ds__##name##_node *node) {\
     ds_assert(set != NULL && node != NULL);\
     if (node->left != NULL) {\
         if (!ds__##name##_subset(set, node->left)) {\
@@ -271,7 +279,7 @@ static inline bool ds__##name##_subset(const name *set, const ds__##name##_node 
     return true;\
 }\
 \
-static inline bool name##_subset(const name *self, const name *set, bool or_equal) {\
+DS_API static inline bool name##_subset(const name *self, const name *set, bool or_equal) {\
     ds_assert(self != NULL);\
     ds_assert(set != NULL);\
     if (self->root == NULL) {\
@@ -280,7 +288,7 @@ static inline bool name##_subset(const name *self, const name *set, bool or_equa
     return ds__##name##_subset(set, self->root) && (or_equal || (self->count != set->count));\
 }\
 \
-static inline void ds__##name##_union(name *self, const ds__##name##_node *node) {\
+DS_API static inline void ds__##name##_union(name *self, const ds__##name##_node *node) {\
     ds_assert(self != NULL && node != NULL);\
     if (node->left != NULL) {\
         ds__##name##_union(self, node->left);\
@@ -291,7 +299,7 @@ static inline void ds__##name##_union(name *self, const ds__##name##_node *node)
     }\
 }\
 \
-static inline name *name##_union(name *self, const name *set) {\
+DS_API static inline name *name##_union(name *self, const name *set) {\
     ds_assert(self != NULL);\
     ds_assert(set != NULL);\
     if (set->root != NULL) {\
@@ -300,7 +308,7 @@ static inline name *name##_union(name *self, const name *set) {\
     return self;\
 }\
 \
-static inline void ds__##name##_intersect(name *self, ds__##name##_node *node, const name *set) {\
+DS_API static inline void ds__##name##_intersect(name *self, ds__##name##_node *node, const name *set) {\
     ds_assert(self != NULL && node != NULL && set != NULL);\
     if (node->left != NULL) {\
         ds__##name##_intersect(self, node->left, set);\
@@ -313,7 +321,7 @@ static inline void ds__##name##_intersect(name *self, ds__##name##_node *node, c
     }\
 }\
 \
-static inline name *name##_intersect(name *self, const name *set) {\
+DS_API static inline name *name##_intersect(name *self, const name *set) {\
     ds_assert(self != NULL);\
     ds_assert(set != NULL);\
     if (self->root != NULL) {\
@@ -322,7 +330,7 @@ static inline name *name##_intersect(name *self, const name *set) {\
     return self;\
 }\
 \
-static inline void ds__##name##_difference(name *self, const ds__##name##_node *node) {\
+DS_API static inline void ds__##name##_difference(name *self, const ds__##name##_node *node) {\
     ds_assert(self != NULL && node != NULL);\
     if (node->left != NULL) {\
         ds__##name##_difference(self, node->left);\
@@ -333,7 +341,7 @@ static inline void ds__##name##_difference(name *self, const ds__##name##_node *
     }\
 }\
 \
-static inline name *name##_difference(name *self, const name *set) {\
+DS_API static inline name *name##_difference(name *self, const name *set) {\
     ds_assert(self != NULL);\
     ds_assert(set != NULL);\
     if (set->root != NULL) {\
@@ -342,7 +350,7 @@ static inline name *name##_difference(name *self, const name *set) {\
     return self;\
 }\
 \
-static inline void ds__##name##_clear(ds__##name##_node *node) {\
+DS_API static inline void ds__##name##_clear(ds__##name##_node *node) {\
     ds_assert(node != NULL);\
     if (node->left != NULL) {\
         ds__##name##_clear(node->left);\
@@ -355,7 +363,7 @@ static inline void ds__##name##_clear(ds__##name##_node *node) {\
     }\
 }\
 \
-static inline void name##_clear(name *self) {\
+DS_API static inline void name##_clear(name *self) {\
     ds_assert(self != NULL);\
     ds_assert((self->root == NULL) == (self->count == 0));\
     if (self->root != NULL) {\
@@ -365,7 +373,7 @@ static inline void name##_clear(name *self) {\
     self->root = NULL;\
 }\
 \
-static inline void ds__##name##_foreach(const ds__##name##_node *node, void(*action)(T)) {\
+DS_API static inline void ds__##name##_foreach(const ds__##name##_node *node, void(*action)(T)) {\
     ds_assert(node != NULL && action != NULL);\
     if (node->left != NULL) {\
         ds__##name##_foreach(node->left, action);\
@@ -376,7 +384,7 @@ static inline void ds__##name##_foreach(const ds__##name##_node *node, void(*act
     }\
 }\
 \
-static inline void name##_foreach(const name *self, void(*action)(T)) {\
+DS_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
     ds_assert(self != NULL);\
     ds_assert(action != NULL);\
     ds_assert((self->root == NULL) == (self->count == 0));\
@@ -385,7 +393,7 @@ static inline void name##_foreach(const name *self, void(*action)(T)) {\
     }\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     name##_clear(self);\
     *self = (name) {0};\

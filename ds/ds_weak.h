@@ -5,13 +5,21 @@
 /**
  * ds_weak.h
  *
+ * Weak references are a counterpart to shared references that don't own the memory.
+ * These references act as a view into the memory only when needed. They have their own weak_count.
+ * Weak references are "weak" because the memory may already be deleted by shared references.
+ *
+ * While shared references are good for distributing pointers across multiple contexts,
+ * weak references are great for managing memory internally while allowing external
+ * parties to have temporary access to it. This is great for breaking reference cycles.
+ *
  * weak         weak_new            ( shared* shared )
  *
  * weak         weak_copy           ( weak* weak )
  *
- * size_t       weak_shared_count   ( const weak* self )
+ * uint         weak_shared_count   ( const weak* self )
  *
- * size_t       weak_weak_count     ( const weak* self )
+ * uint         weak_weak_count     ( const weak* self )
  *
  * bool         weak_valid          ( const weak* self )
  *
@@ -32,7 +40,7 @@ typedef struct {\
     ds__##shared_name##_control_block *control_block;\
 } name;\
 \
-static inline name name##_new(shared_name *shared) {\
+DS_API static inline name name##_new(shared_name *shared) {\
     ds_assert(shared != NULL);\
     ds_assert(shared->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = shared->control_block;\
@@ -44,7 +52,7 @@ static inline name name##_new(shared_name *shared) {\
     };\
 }\
 \
-static inline name name##_copy(name *weak) {\
+DS_API static inline name name##_copy(name *weak) {\
     ds_assert(weak != NULL);\
     ds_assert(weak->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = weak->control_block;\
@@ -55,19 +63,19 @@ static inline name name##_copy(name *weak) {\
     };\
 }\
 \
-static inline ds_size name##_shared_count(const name *self) {\
+DS_API static inline ds_uint name##_shared_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->shared_count;\
 }\
 \
-static inline ds_size name##_weak_count(const name *self) {\
+DS_API static inline ds_uint name##_weak_count(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     return self->control_block->weak_count;\
 }\
 \
-static inline bool name##_valid(const name *self) {\
+DS_API static inline bool name##_valid(const name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
@@ -76,7 +84,7 @@ static inline bool name##_valid(const name *self) {\
     return control_block->shared_count > 0;\
 }\
 \
-static inline shared_name name##_upgrade(name *self) {\
+DS_API static inline shared_name name##_upgrade(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
@@ -89,7 +97,7 @@ static inline shared_name name##_upgrade(name *self) {\
     };\
 }\
 \
-static inline void name##_delete(name *self) {\
+DS_API static inline void name##_delete(name *self) {\
     ds_assert(self != NULL);\
     ds_assert(self->control_block != NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\

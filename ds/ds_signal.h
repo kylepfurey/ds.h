@@ -66,7 +66,7 @@
  * * <args> must match the function signature and are passed to each binding.
  * * The signal can be mutated while being invoked.
  *
- *   macro            signal_invoke       ( signal* self, args... )
+ *   MACRO            signal_invoke       ( signal* self, args... )
  *
  * * Deletes all bindings in a signal.
  *

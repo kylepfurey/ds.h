@@ -6,19 +6,19 @@
  * ds.h
  *
  * This is a C99 header-only data structure library.
- * Each of the following data structure headers provide ds_DECLARE and ds_DECLARE_NAMED macros.
+ * Each of the following data structure headers provides ds_DECLARE and ds_DECLARE_NAMED macros.
  * These macros are used to generate type-safe data structures.
  *
  * This file simply includes all of them and some C standard library headers.
  * The library includes are as follows:
  *
  * ds_std.h         - C Standard Library Includes
- * ds_def.h         - ds.h Type, Macro, and Function Declarations
+ * ds_def.h         - ds.h Macro, Type, and Function Declarations
  * ds_arena.h       - Block Allocator
  * ds_vector.h      - Dynamic Array
  * ds_string.h      - Mutable String
  * ds_list.h        - Doubly Linked List
- * ds_queue.h       - Double Ended Priority Queue
+ * ds_queue.h       - Double-Ended Priority Queue
  * ds_set.h         - Sorted Binary Tree Set
  * ds_map.h         - Key-Value Hash Map
  * ds_unique.h      - Unique Reference

@@ -31,8 +31,8 @@
  *
  *   queue        queue_new               ( void )
  *
- * * Returns a new queue shallow copied from <queue>.
- * * This data structure must be deleted with queue_delete().
+ * * Returns a new queue copied from <queue>.
+ * * The new queue owns its own memory and must be deleted with queue_delete().
  *
  *   queue        queue_copy              ( const queue* queue )
  *
@@ -117,56 +117,56 @@ ds_API static inline name name##_new() {\
 }\
 \
 ds_API static inline name name##_copy(const name *queue) {\
-    ds_assert(queue != NULL);\
+    ds_assert(queue != ds_NULL);\
     return (name) {\
         ds__##name##_list_copy(&queue->queue),\
     };\
 }\
 \
 ds_API static inline ds_size name##_count(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->queue.count;\
 }\
 \
 ds_API static inline ds_bool name##_empty(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert((self->queue.count == 0) ==\
-           ((self->queue.head == NULL) &&\
-           (self->queue.tail == NULL)));\
+           ((self->queue.head == ds_NULL) &&\
+           (self->queue.tail == ds_NULL)));\
     return self->queue.count == 0;\
 }\
 \
 ds_API static inline T *name##_first(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.head != NULL);\
+    ds_assert(self->queue.head != ds_NULL);\
     return &self->queue.head->data.data;\
 }\
 \
 ds_API static inline const T *name##_first_const(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.head != NULL);\
+    ds_assert(self->queue.head != ds_NULL);\
     return &self->queue.head->data.data;\
 }\
 \
 ds_API static inline T *name##_last(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.tail != NULL);\
+    ds_assert(self->queue.tail != ds_NULL);\
     return &self->queue.tail->data.data;\
 }\
 \
 ds_API static inline const T *name##_last_const(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.tail != NULL);\
+    ds_assert(self->queue.tail != ds_NULL);\
     return &self->queue.tail->data.data;\
 }\
 \
 ds_API static inline void name##_push(name *self, T data, P priority) {\
-    ds_assert(self != NULL);\
-    if (self->queue.head == NULL) {\
+    ds_assert(self != ds_NULL);\
+    if (self->queue.head == ds_NULL) {\
         ds__##name##_list_push_front(\
             &self->queue,\
             (ds__##name##_pair) {\
@@ -174,11 +174,11 @@ ds_API static inline void name##_push(name *self, T data, P priority) {\
                 priority,\
             }\
         );\
-        ds_assert(self->queue.head != NULL);\
+        ds_assert(self->queue.head != ds_NULL);\
         return;\
     }\
     ds__##name##_list_node *current = self->queue.head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         P x = priority;\
         P y = current->data.priority;\
         if ((x_y_comparer)) {\
@@ -204,25 +204,25 @@ ds_API static inline void name##_push(name *self, T data, P priority) {\
 }\
 \
 ds_API static inline void name##_pop_first(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.head != NULL);\
+    ds_assert(self->queue.head != ds_NULL);\
     deleter(&self->queue.head->data.data);\
     ds__##name##_list_pop_front(&self->queue);\
 }\
 \
 ds_API static inline void name##_pop_last(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->queue.count > 0);\
-    ds_assert(self->queue.tail != NULL);\
+    ds_assert(self->queue.tail != ds_NULL);\
     deleter(&self->queue.tail->data.data);\
     ds__##name##_list_pop_back(&self->queue);\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds__##name##_list_node *current = self->queue.head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         deleter(&current->data.data);\
         current = current->next;\
     }\
@@ -230,17 +230,17 @@ ds_API static inline void name##_clear(name *self) {\
 }\
 \
 ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(action != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(action != ds_NULL);\
     const ds__##name##_list_node *current = self->queue.head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         action(current->data.data);\
         current = current->next;\
     }\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     name##_clear(self);\
     *self = (name) {0};\
 }

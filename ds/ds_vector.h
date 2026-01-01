@@ -18,7 +18,7 @@
  * Vectors also cache their size and capacity for runtime checks when accessing memory.
  *
  * Vectors are excellent general-use data structures for storing multiple elements.
- * Indexing into vectors provide the fastest random access to their elements.
+ * Indexing into vectors provides the fastest random access to their elements.
  * Inserting and removing into the back of a vector is also very fast.
  *
  * * Returns a new vector with a current capacity of <capacity> elements.
@@ -27,8 +27,8 @@
  *
  *   vector       vector_new              ( size_t capacity )
  *
- * * Returns a new vector shallow copied from <vector>.
- * * This data structure must be deleted with vector_delete().
+ * * Returns a new vector copied from <vector>.
+ * * The new vector owns its own memory and must be deleted with vector_delete().
  *
  *   vector       vector_copy             ( const vector* vector )
  *
@@ -87,6 +87,7 @@
  *   void         vector_pop              ( vector* self )
  *
  * * Reverses and returns the vector.
+ * * Returns a pointer to the vector's array.
  *
  *   T*           vector_reverse          ( vector* self )
  *
@@ -140,7 +141,7 @@ typedef struct {\
 ds_API static inline name name##_new(ds_size capacity) {\
     ds_assert(capacity > 0);\
     T *array = (T *) ds_malloc(sizeof(T) * capacity);\
-    ds_assert(array != NULL);\
+    ds_assert(array != ds_NULL);\
     return (name) {\
         0,\
         capacity,\
@@ -149,7 +150,7 @@ ds_API static inline name name##_new(ds_size capacity) {\
 }\
 \
 ds_API static inline name name##_copy(const name *vector) {\
-    ds_assert(vector != NULL);\
+    ds_assert(vector != ds_NULL);\
     name self = name##_new(vector->capacity);\
     self.count = vector->count;\
     ds_memcpy(self.array, vector->array, sizeof(T) * self.count);\
@@ -157,57 +158,57 @@ ds_API static inline name name##_copy(const name *vector) {\
 }\
 \
 ds_API static inline ds_size name##_count(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
     return self->count;\
 }\
 \
 ds_API static inline ds_size name##_capacity(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
     return self->capacity;\
 }\
 \
 ds_API static inline ds_bool name##_empty(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
     return self->count == 0;\
 }\
 \
 ds_API static inline T *name##_get(name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(index < self->count);\
     return self->array + index;\
 }\
 \
 ds_API static inline const T *name##_get_const(const name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(index < self->count);\
     return self->array + index;\
 }\
 \
 ds_API static inline T *name##_array(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     return self->array;\
 }\
 \
 ds_API static inline const T *name##_array_const(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     return self->array;\
 }\
 \
 ds_API static inline void name##_resize(name *self, ds_size capacity) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(capacity > 0);\
     if (capacity == self->capacity) {\
         return;\
@@ -223,16 +224,16 @@ ds_API static inline void name##_resize(name *self, ds_size capacity) {\
     }\
     self->capacity = capacity;\
     T *array = (T *) ds_realloc(self->array, sizeof(T) * capacity);\
-    ds_assert(array != NULL);\
+    ds_assert(array != ds_NULL);\
     self->array = array;\
 }\
 \
 ds_API static inline void name##_insert(name *self, ds_size index, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(index <= self->count);\
-    ds_assert(self->capacity <= SIZE_MAX / (sizeof(T) * ds_VECTOR_EXPANSION));\
+    ds_assert(self->capacity <= ds_SIZE_MAX / (sizeof(T) * ds_VECTOR_EXPANSION));\
     if (self->count == self->capacity) {\
         name##_resize(self, self->capacity * ds_VECTOR_EXPANSION);\
     }\
@@ -242,9 +243,9 @@ ds_API static inline void name##_insert(name *self, ds_size index, T data) {\
 }\
 \
 ds_API static inline void name##_erase(name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(index < self->count);\
     deleter(self->array + index);\
     ds_memmove(self->array + index, self->array + index + 1, sizeof(T) * (self->count - index - 1));\
@@ -252,9 +253,9 @@ ds_API static inline void name##_erase(name *self, ds_size index) {\
 }\
 \
 ds_API static inline void name##_push(name *self, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->capacity <= SIZE_MAX / (sizeof(T) * ds_VECTOR_EXPANSION));\
+    ds_assert(self->capacity <= ds_SIZE_MAX / (sizeof(T) * ds_VECTOR_EXPANSION));\
     if (self->count == self->capacity) {\
         name##_resize(self, self->capacity * ds_VECTOR_EXPANSION);\
     }\
@@ -263,18 +264,18 @@ ds_API static inline void name##_push(name *self, T data) {\
 }\
 \
 ds_API static inline void name##_pop(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
     deleter(&self->array[self->count]);\
 }\
 \
 ds_API static inline T *name##_reverse(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_size count = self->count / 2;\
     for (ds_size i = 0; i < count; ++i) {\
         T temp = self->array[i];\
@@ -285,9 +286,9 @@ ds_API static inline T *name##_reverse(name *self) {\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     for (ds_size i = 0; i < self->count; ++i) {\
         deleter(self->array + i);\
     }\
@@ -295,10 +296,10 @@ ds_API static inline void name##_clear(name *self) {\
 }\
 \
 ds_API static inline T *name##_map(name *self, T(*transform)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(transform != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(transform != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     for (ds_size i = 0; i < self->count; ++i) {\
         self->array[i] = transform(self->array[i]);\
     }\
@@ -306,10 +307,10 @@ ds_API static inline T *name##_map(name *self, T(*transform)(T)) {\
 }\
 \
 ds_API static inline ds_size name##_filter(name *self, ds_bool(*predicate)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(predicate != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(predicate != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     ds_size total = 0;\
     for (ds_size i = 0; i < self->count; ++i) {\
         if (predicate(self->array[i])) {\
@@ -323,10 +324,10 @@ ds_API static inline ds_size name##_filter(name *self, ds_bool(*predicate)(T)) {
 }\
 \
 ds_API static inline T name##_reduce(const name *self, T start, T(*accumulator)(T, T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(accumulator != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(accumulator != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     for (ds_size i = 0; i < self->count; ++i) {\
         start = accumulator(start, self->array[i]);\
     }\
@@ -334,19 +335,19 @@ ds_API static inline T name##_reduce(const name *self, T start, T(*accumulator)(
 }\
 \
 ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(action != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(action != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     for (ds_size i = 0; i < self->count; ++i) {\
         action(self->array[i]);\
     }\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count <= self->capacity);\
-    ds_assert(self->array != NULL);\
+    ds_assert(self->array != ds_NULL);\
     name##_clear(self);\
     ds_free(self->array);\
     *self = (name) {0};\

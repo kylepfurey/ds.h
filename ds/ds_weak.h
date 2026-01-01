@@ -22,12 +22,12 @@
  * * Returns a new weak reference from <shared>.
  * * This data structure must be deleted with weak_delete().
  *
- *   weak     weak_new            ( shared* shared )
+ *   weak     weak_new            ( const shared* shared )
  *
  * * Returns a new weak reference with the same address as <weak>.
- * * This data structure must be deleted with weak_delete().
+ * * The new weak reference increments the weak count and must be deleted with weak_delete().
  *
- *   weak     weak_copy           ( weak* weak )
+ *   weak     weak_copy           ( const weak* weak )
  *
  * * Returns the number of shared references to <self>'s data.
  *
@@ -64,21 +64,21 @@ typedef struct {\
     ds__##shared_name##_control_block *control_block;\
 } name;\
 \
-ds_API static inline name name##_new(shared_name *shared) {\
-    ds_assert(shared != NULL);\
-    ds_assert(shared->control_block != NULL);\
+ds_API static inline name name##_new(const shared_name *shared) {\
+    ds_assert(shared != ds_NULL);\
+    ds_assert(shared->control_block != ds_NULL);\
     ds__##shared_name##_control_block *control_block = shared->control_block;\
     ds_assert(control_block->shared_count > 0);\
-    ds_assert(control_block->data != NULL);\
+    ds_assert(control_block->data != ds_NULL);\
     ++control_block->weak_count;\
     return (name) {\
         control_block,\
     };\
 }\
 \
-ds_API static inline name name##_copy(name *weak) {\
-    ds_assert(weak != NULL);\
-    ds_assert(weak->control_block != NULL);\
+ds_API static inline name name##_copy(const name *weak) {\
+    ds_assert(weak != ds_NULL);\
+    ds_assert(weak->control_block != ds_NULL);\
     ds__##shared_name##_control_block *control_block = weak->control_block;\
     ds_assert(control_block->weak_count > 0);\
     ++control_block->weak_count;\
@@ -88,33 +88,33 @@ ds_API static inline name name##_copy(name *weak) {\
 }\
 \
 ds_API static inline ds_uint name##_shared_count(const name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->control_block != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->control_block != ds_NULL);\
     return self->control_block->shared_count;\
 }\
 \
 ds_API static inline ds_uint name##_weak_count(const name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->control_block != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->control_block != ds_NULL);\
     return self->control_block->weak_count;\
 }\
 \
 ds_API static inline ds_bool name##_valid(const name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->control_block != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->control_block != ds_NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
     ds_assert(control_block->weak_count > 0);\
-    ds_assert((control_block->shared_count > 0) != (control_block->data == NULL));\
+    ds_assert((control_block->shared_count > 0) != (control_block->data == ds_NULL));\
     return control_block->shared_count > 0;\
 }\
 \
 ds_API static inline shared_name name##_upgrade(name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->control_block != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->control_block != ds_NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
     ds_assert(control_block->shared_count > 0);\
     ds_assert(control_block->weak_count > 0);\
-    ds_assert(control_block->data != NULL);\
+    ds_assert(control_block->data != ds_NULL);\
     ++control_block->shared_count;\
     return (shared_name) {\
         control_block,\
@@ -122,13 +122,13 @@ ds_API static inline shared_name name##_upgrade(name *self) {\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->control_block != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->control_block != ds_NULL);\
     ds__##shared_name##_control_block *control_block = self->control_block;\
     ds_assert(control_block->weak_count > 0);\
     --control_block->weak_count;\
     if (control_block->weak_count == 0 && control_block->shared_count == 0) {\
-        ds_assert(control_block->data == NULL);\
+        ds_assert(control_block->data == ds_NULL);\
         ds_free(control_block);\
     }\
     *self = (name) {0};\

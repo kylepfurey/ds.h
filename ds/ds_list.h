@@ -25,9 +25,9 @@
  * * This is the underlying list_node type. You must not modify its pointers.
  *
  *   typedef struct {
- *        T                   data;
- *        list_node* const    previous;
- *        list_node* const    next;
+ *        T              data;
+ *        list_node*     previous;
+ *        list_node*     next;
  *   } list_node;
  *
  * * Returns a new list.
@@ -35,8 +35,8 @@
  *
  *   list                 list_new                ( void )
  *
- * * Returns a new list shallow copied from <list>.
- * * This data structure must be deleted with list_delete().
+ * * Returns a new list copied from <list>.
+ * * The new list owns its own memory and must be deleted with list_delete().
  *
  *   list                 list_copy               ( const list* list )
  *
@@ -145,104 +145,104 @@ typedef struct {\
 ds_API static inline name name##_new() {\
     return (name) {\
         0,\
-        NULL,\
-        NULL,\
+        ds_NULL,\
+        ds_NULL,\
     };\
 }\
 \
 ds_API static inline ds_size name##_count(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->count;\
 }\
 \
 ds_API static inline ds_bool name##_empty(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->count == 0;\
 }\
 \
 ds_API static inline name##_node *name##_front(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
-    ds_assert(self->head != NULL);\
+    ds_assert(self->head != ds_NULL);\
     return self->head;\
 }\
 \
 ds_API static inline const name##_node *name##_front_const(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
-    ds_assert(self->head != NULL);\
+    ds_assert(self->head != ds_NULL);\
     return self->head;\
 }\
 \
 ds_API static inline name##_node *name##_back(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
-    ds_assert(self->tail != NULL);\
+    ds_assert(self->tail != ds_NULL);\
     return self->tail;\
 }\
 \
 ds_API static inline const name##_node *name##_back_const(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
-    ds_assert(self->tail != NULL);\
+    ds_assert(self->tail != ds_NULL);\
     return self->tail;\
 }\
 \
 ds_API static inline name##_node *name##_get(name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(index < self->count);\
     name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
-        ds_assert(node != NULL);\
+        ds_assert(node != ds_NULL);\
         for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
-            ds_assert(node != NULL);\
+            ds_assert(node != ds_NULL);\
         }\
     } else {\
         node = self->tail;\
-        ds_assert(node != NULL);\
+        ds_assert(node != ds_NULL);\
         for (ds_diff i = self->count - 1; i != index; --i) {\
             node = node->previous;\
-            ds_assert(node != NULL);\
+            ds_assert(node != ds_NULL);\
         }\
     }\
     return node;\
 }\
 \
 ds_API static inline const name##_node *name##_get_const(const name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(index < self->count);\
     const name##_node *node;\
     if (index <= self->count / 2) {\
         node = self->head;\
-        ds_assert(node != NULL);\
+        ds_assert(node != ds_NULL);\
         for (ds_size i = 0; i != index; ++i) {\
             node = node->next;\
-            ds_assert(node != NULL);\
+            ds_assert(node != ds_NULL);\
         }\
     } else {\
         node = self->tail;\
-        ds_assert(node != NULL);\
+        ds_assert(node != ds_NULL);\
         for (ds_diff i = self->count - 1; i != index; --i) {\
             node = node->previous;\
-            ds_assert(node != NULL);\
+            ds_assert(node != ds_NULL);\
         }\
     }\
     return node;\
 }\
 \
 ds_API static inline name##_node *name##_insert_before(name *self, name##_node *node, T data) {\
-    ds_assert(self != NULL);\
-    ds_assert(node != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(node != ds_NULL);\
     ds_assert(self->count > 0);\
     ++self->count;\
     name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    ds_assert(new_node != NULL);\
+    ds_assert(new_node != ds_NULL);\
     new_node->data = data;\
     new_node->next = node;\
     new_node->previous = node->previous;\
-    if (node->previous != NULL) {\
+    if (node->previous != ds_NULL) {\
         node->previous->next = new_node;\
     }\
     node->previous = new_node;\
@@ -253,16 +253,16 @@ ds_API static inline name##_node *name##_insert_before(name *self, name##_node *
 }\
 \
 ds_API static inline name##_node *name##_insert_after(name *self, name##_node *node, T data) {\
-    ds_assert(self != NULL);\
-    ds_assert(node != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(node != ds_NULL);\
     ds_assert(self->count > 0);\
     ++self->count;\
     name##_node *new_node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    ds_assert(new_node != NULL);\
+    ds_assert(new_node != ds_NULL);\
     new_node->data = data;\
     new_node->previous = node;\
     new_node->next = node->next;\
-    if (node->next != NULL) {\
+    if (node->next != ds_NULL) {\
         node->next->previous = new_node;\
     }\
     node->next = new_node;\
@@ -273,8 +273,8 @@ ds_API static inline name##_node *name##_insert_after(name *self, name##_node *n
 }\
 \
 ds_API static inline void name##_erase(name *self, name##_node *node) {\
-    ds_assert(self != NULL);\
-    ds_assert(node != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(node != ds_NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
     if (self->head == node) {\
@@ -283,10 +283,10 @@ ds_API static inline void name##_erase(name *self, name##_node *node) {\
     if (self->tail == node) {\
         self->tail = node->previous;\
     }\
-    if (node->previous != NULL) {\
+    if (node->previous != ds_NULL) {\
         node->previous->next = node->next;\
     }\
-    if (node->next != NULL) {\
+    if (node->next != ds_NULL) {\
         node->next->previous = node->previous;\
     }\
     deleter(&node->data);\
@@ -294,18 +294,18 @@ ds_API static inline void name##_erase(name *self, name##_node *node) {\
 }\
 \
 ds_API static inline name##_node *name##_push_front(name *self, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    ds_assert(node != NULL);\
+    ds_assert(node != ds_NULL);\
     node->data = data;\
-    node->previous = NULL;\
-    if (self->head == NULL) {\
-        ds_assert(self->tail == NULL);\
-        node->next = NULL;\
+    node->previous = ds_NULL;\
+    if (self->head == ds_NULL) {\
+        ds_assert(self->tail == ds_NULL);\
+        node->next = ds_NULL;\
         self->tail = node;\
     } else {\
-        ds_assert(self->tail != NULL);\
+        ds_assert(self->tail != ds_NULL);\
         node->next = self->head;\
         self->head->previous = node;\
     }\
@@ -314,18 +314,18 @@ ds_API static inline name##_node *name##_push_front(name *self, T data) {\
 }\
 \
 ds_API static inline name##_node *name##_push_back(name *self, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ++self->count;\
     name##_node *node = (name##_node *) ds_malloc(sizeof(name##_node));\
-    ds_assert(node != NULL);\
+    ds_assert(node != ds_NULL);\
     node->data = data;\
-    node->next = NULL;\
-    if (self->tail == NULL) {\
-        ds_assert(self->head == NULL);\
-        node->previous = NULL;\
+    node->next = ds_NULL;\
+    if (self->tail == ds_NULL) {\
+        ds_assert(self->head == ds_NULL);\
+        node->previous = ds_NULL;\
         self->head = node;\
     } else {\
-        ds_assert(self->head != NULL);\
+        ds_assert(self->head != ds_NULL);\
         node->previous = self->tail;\
         self->tail->next = node;\
     }\
@@ -334,14 +334,14 @@ ds_API static inline name##_node *name##_push_back(name *self, T data) {\
 }\
 \
 ds_API static inline name name##_copy(const name *list) {\
-    ds_assert(list != NULL);\
+    ds_assert(list != ds_NULL);\
     name self = (name) {\
         0,\
-        NULL,\
-        NULL,\
+        ds_NULL,\
+        ds_NULL,\
     };\
     const name##_node *current = list->head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         name##_push_back(&self, current->data);\
         current = current->next;\
     }\
@@ -350,67 +350,67 @@ ds_API static inline name name##_copy(const name *list) {\
 }\
 \
 ds_API static inline void name##_pop_front(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
     name##_node *node = self->head;\
-    ds_assert(node != NULL);\
+    ds_assert(node != ds_NULL);\
     self->head = node->next;\
-    if (self->head == NULL) {\
-        self->tail = NULL;\
+    if (self->head == ds_NULL) {\
+        self->tail = ds_NULL;\
         ds_assert(self->count == 0);\
     }\
     deleter(&node->data);\
     ds_free(node);\
-    if (self->head != NULL) {\
-        self->head->previous = NULL;\
+    if (self->head != ds_NULL) {\
+        self->head->previous = ds_NULL;\
     }\
 }\
 \
 ds_API static inline void name##_pop_back(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
     --self->count;\
     name##_node *node = self->tail;\
-    ds_assert(node != NULL);\
+    ds_assert(node != ds_NULL);\
     self->tail = node->previous;\
-    if (self->tail == NULL) {\
-        self->head = NULL;\
+    if (self->tail == ds_NULL) {\
+        self->head = ds_NULL;\
         ds_assert(self->count == 0);\
     }\
     deleter(&node->data);\
     ds_free(node);\
-    if (self->tail != NULL) {\
-        self->tail->next = NULL;\
+    if (self->tail != ds_NULL) {\
+        self->tail->next = ds_NULL;\
     }\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     name##_node *current = self->head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         name##_node *next = current->next;\
         deleter(&current->data);\
         ds_free(current);\
         current = next;\
     }\
     self->count = 0;\
-    self->head = NULL;\
-    self->tail = NULL;\
+    self->head = ds_NULL;\
+    self->tail = ds_NULL;\
 }\
 \
 ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(action != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(action != ds_NULL);\
     const name##_node *current = self->head;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         action(current->data);\
         current = current->next;\
     }\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     name##_clear(self);\
     *self = (name) {0};\
 }

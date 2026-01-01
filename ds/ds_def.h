@@ -8,10 +8,6 @@
  * This file is used by the ds.h library for declarations.
  * Settings, default parameters, and repeated functionality are defined here.
  *
- * ds_API is a tag in front of each generated ds.h function.
- *
- * ds_assert() is used to make assertions clear and clean with zero runtime overhead.
- *
  * ds_malloc, ds_calloc, ds_realloc, and ds_free are ds.h's default allocator functions.
  * ds_memcpy, ds_memmove, ds_memset are ds.h's default memory functions.
  * ds_strlen, ds_tolower, ds_toupper, ds_isspace are ds.h's default string functions.
@@ -34,7 +30,13 @@
  * ds_INT_HASH uses an integer type as a hash number. Replaces key_hasher.
  * ds_STRING_HASH calls ds_hashify() on a string with strlen(). Replaces key_hasher.
  *
+ * ds_NULL is a sentinel value used to indicate an invalid pointer.
  * ds_NOT_FOUND is a sentinel value used to indicate an invalid index.
+ * ds_SIZE_MAX is the maximum value of ds_size.
+ *
+ * ds_assert() is used to make assertions clear and clean with zero runtime overhead.
+ *
+ * ds_API is a tag in front of each generated ds.h function.
  *
  * ds_false and ds_true are boolean values used internally.
  *
@@ -52,18 +54,7 @@
 #ifndef DS_DEF_H
 #define DS_DEF_H
 
-/** A tag for generated functions indicating they are from the ds.h library. */
-#define ds_API
-
-/** Asserts used in data structures. */
-#ifdef NDEBUG
-#define ds_assert(cond) ((void) 0)
-#else
-#define ds_assert(cond)\
-do if (!(cond)) fprintf(stderr, \
-"ds.h - ASSERTION FAILED\nFunction:\t%s()\nLine:\t\t%d\nCondition:\t%s\n", \
-__func__, __LINE__, (#cond)), abort(); while (ds_false)
-#endif
+#include "ds_std.h"
 
 /** The default data structure allocator functions. */
 #define ds_malloc   malloc
@@ -106,8 +97,27 @@ __func__, __LINE__, (#cond)), abort(); while (ds_false)
 #define ds_INT_HASH        key
 #define ds_STRING_HASH     ds_hashify(ds_strlen(key), key)
 
+/** A value of a pointer with no data. */
+#define ds_NULL ((void *) 0)
+
 /** An index indicating something was not found. */
 #define ds_NOT_FOUND ((ds_size) -1)
+
+/** The maximum value of ds_size. */
+#define ds_SIZE_MAX SIZE_MAX
+
+/** Asserts used in data structures. */
+#ifdef NDEBUG
+#define ds_assert(cond) ((void) 0)
+#else
+#define ds_assert(cond)\
+do if (!(cond)) fprintf(stderr, \
+"ds.h - ASSERTION FAILED\nFunction:\t%s()\nLine:\t\t%d\nCondition:\t%s\n", \
+__func__, __LINE__, (#cond)), abort(); while (ds_false)
+#endif
+
+/** A tag for generated functions indicating they are from the ds.h library. */
+#define ds_API
 
 /** Boolean literals. */
 enum {
@@ -137,7 +147,7 @@ ds_API static inline void ds_void_deleter(void *self) {
 
 /** Hashes any data as an array of bytes. */
 ds_API static inline ds_size ds_hashify(ds_size size, const void *data) {
-    ds_assert(data != NULL);
+    ds_assert(data != ds_NULL);
     // FNV-1a
     const ds_byte *memory = (ds_byte *) data;
     ds_size hash = 2166136261u; // FNV offset

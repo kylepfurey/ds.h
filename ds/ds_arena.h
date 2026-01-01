@@ -24,7 +24,7 @@
  *
  *   arena    arena_new       ( size_t size )
  *
- * * Allocates at least <size> number of the bytes.
+ * * Allocates at least <size> number of bytes.
  * * Returns a new pointer or NULL.
  *
  *   void*    arena_malloc    ( arena* self, size_t size )
@@ -37,7 +37,7 @@
  * * Reallocates <ptr> to have at least <size> bytes.
  * * Returns a new pointer or NULL.
  *
- *   void*    arena_realloc   ( arena* self, void *ptr, ds_size size )
+ *   void*    arena_realloc   ( arena* self, void *ptr, size_t size )
  *
  * * Frees <ptr> from the arena so it may be reused again.
  * * <ptr> can be NULL.
@@ -78,26 +78,26 @@ ds_API static inline name name##_new(ds_size size) {\
     size = ds_ARENA_ALIGN(size, (alignment));\
     size += ds__##name##_block_SIZE;\
     void *start = ds_malloc(size);\
-    ds_assert(start != NULL);\
+    ds_assert(start != ds_NULL);\
     name self = (name) {\
         start,\
         (ds_byte *) start + size,\
         (ds__##name##_block *) start,\
     };\
     self.free->size = size;\
-    self.free->next = NULL;\
+    self.free->next = ds_NULL;\
     return self;\
 }\
 \
 ds_API static inline void *name##_malloc(name *self, ds_size size) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     if (size == 0) {\
-        return NULL;\
+        return ds_NULL;\
     }\
     size = ds_ARENA_ALIGN(size, (alignment));\
     ds__##name##_block **previous = &self->free;\
     ds__##name##_block *current = self->free;\
-    while (current != NULL) {\
+    while (current != ds_NULL) {\
         if (current->size >= ds__##name##_block_SIZE + size) {\
             ds__##name##_block *block = (ds__##name##_block *)\
                 ((ds_byte *) current + size + ds__##name##_block_SIZE);\
@@ -105,65 +105,65 @@ ds_API static inline void *name##_malloc(name *self, ds_size size) {\
             block->next = current->next;\
             *previous = block;\
             current->size = size;\
-            current->next = NULL;\
+            current->next = ds_NULL;\
             return (ds_byte *) current + ds__##name##_block_SIZE;\
         }\
         previous = &current->next;\
         current = current->next;\
     }\
-    return NULL;\
+    return ds_NULL;\
 }\
 \
 ds_API static inline void name##_free(name *self, void *ptr) {\
-    ds_assert(self != NULL);\
-    ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
-    if (ptr == NULL) {\
+    ds_assert(self != ds_NULL);\
+    ds_assert(ptr == ds_NULL || (ptr >= self->start && ptr < self->end));\
+    if (ptr == ds_NULL) {\
         return;\
     }\
     ds__##name##_block* block = (ds__##name##_block *)\
         ((ds_byte *) ptr - ds__##name##_block_SIZE);\
-    ds__##name##_block *previous = NULL;\
+    ds__##name##_block *previous = ds_NULL;\
     ds__##name##_block *current = self->free;\
-    while (current != NULL && current < block) {\
+    while (current != ds_NULL && current < block) {\
         previous = current;\
         current = current->next;\
     }\
     block->next = current;\
-    if (previous != NULL) {\
+    if (previous != ds_NULL) {\
         previous->next = block;\
     } else {\
         self->free = block;\
     }\
-    if (current != NULL && (ds_byte *) block + block->size + ds__##name##_block_SIZE == (ds_byte *) current) {\
+    if (current != ds_NULL && (ds_byte *) block + block->size + ds__##name##_block_SIZE == (ds_byte *) current) {\
         block->size += ds__##name##_block_SIZE + current->size;\
         block->next = current->next;\
     }\
-    if (previous != NULL && (ds_byte *) previous + previous->size + ds__##name##_block_SIZE == (ds_byte *) block) {\
+    if (previous != ds_NULL && (ds_byte *) previous + previous->size + ds__##name##_block_SIZE == (ds_byte *) block) {\
         previous->size += block->size + ds__##name##_block_SIZE;\
         previous->next = block->next;\
     }\
 }\
 \
 ds_API static inline void *name##_calloc(name *self, ds_size count, ds_size size) {\
-    ds_assert(self != NULL);\
-    ds_assert(size == 0 || count <= SIZE_MAX / size);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(size == 0 || count <= ds_SIZE_MAX / size);\
     ds_size total = count * size;\
     void *ptr = name##_malloc(self, total);\
-    if (ptr != NULL) {\
+    if (ptr != ds_NULL) {\
         ds_memset(ptr, 0, total);\
     }\
     return ptr;\
 }\
 \
 ds_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {\
-    ds_assert(self != NULL);\
-    ds_assert(ptr == NULL || (ptr >= self->start && ptr < self->end));\
-    if (ptr == NULL) {\
+    ds_assert(self != ds_NULL);\
+    ds_assert(ptr == ds_NULL || (ptr >= self->start && ptr < self->end));\
+    if (ptr == ds_NULL) {\
         return name##_malloc(self, size);\
     }\
     if (size == 0) {\
         name##_free(self, ptr);\
-        return NULL; \
+        return ds_NULL; \
     }\
     ds__##name##_block* block = (ds__##name##_block *)\
         ((ds_byte *) ptr - ds__##name##_block_SIZE);\
@@ -171,8 +171,8 @@ ds_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {
         return ptr;\
     }\
     void *new_ptr = name##_malloc(self, size);\
-    if (new_ptr == NULL) {\
-        return NULL;\
+    if (new_ptr == ds_NULL) {\
+        return ds_NULL;\
     }\
     ds_memcpy(new_ptr, ptr, block->size);\
     name##_free(self, ptr);\
@@ -180,12 +180,12 @@ ds_API static inline void *name##_realloc(name *self, void *ptr, ds_size size) {
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->start != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->start != ds_NULL);\
     if (ds_ARENA_LEAK_ASSERT) {\
         ds_assert(\
-            self->free != NULL &&\
-            self->free->next == NULL &&\
+            self->free != ds_NULL &&\
+            self->free->next == ds_NULL &&\
             (void *) self->free == self->start &&\
             self->free->size == ((ds_byte *) self->end - (ds_byte *) self->start)\
         );\

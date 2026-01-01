@@ -1,6 +1,6 @@
 # ds.h
 
-This is a generic header-only C99 core data structure library. Each header file in the ds folder provide macros for generating type-safe data structures. Each data structure's API is documented in a top-level comment and in this README file below.
+This is a generic header-only C99 core data structure library. Each header file in the ds folder provides macros for generating type-safe data structures. Each data structure's API is documented in a top-level comment and in this README file below.
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@ This library, while simple, is not without its faults. There are some key notes 
 
 1. This is a single-threaded library. There is no intention for this library to support concurrency. There are likely ways to extend this library to be thread-safe, but it was not built with multithreading as a priority.
 
-2. Asserts are everywhere in this library to catch errors as soon as possible. This is to ensure invariants are maintained and that functions are used as expected by the library. If you are having trouble with assertions, you can expand + format the macro to find the exact spot where your code breaks. As with any assert, NDEBUG will make asserts a no-op. Read the documentation to ensure the API is being followed as intended, or just change it yourself.
+2. Asserts are everywhere in this library to catch errors as soon as possible. This is to ensure invariants are maintained and that functions are used as expected by the library. If you are having trouble with assertions, you can expand + format the macro to find the exact spot where your code breaks. As with any assert, `NDEBUG` will make asserts a no-op. Read the documentation to ensure the API is being followed as intended, or just change it yourself.
 
 3. This library implements the most common data structures in each language, but they are not guaranteed to be the most efficient. These data structures are for general use and can certainly be optimized, but each implementation is simple and aims to be as readable as possible despite the nature of macros. If you need an efficient data structure library, I would recommend using [EASTL](https://github.com/electronicarts/EASTL) in C++.
 
@@ -54,7 +54,7 @@ This data structure must be deleted with `arena_delete()`.
 arena              arena_new            ( size_t size )
 ```
 
-Allocates at least `<size>` number of the bytes.
+Allocates at least `<size>` number of bytes.
 Returns a new pointer or `NULL`.
 
 ```c
@@ -72,7 +72,7 @@ Reallocates `<ptr>` to have at least `<size>` bytes.
 Returns a new pointer or `NULL`.
 
 ```c
-void*              arena_realloc        ( arena* self, void* ptr, ds_size size )
+void*              arena_realloc        ( arena* self, void* ptr, size_t size )
 ```
 
 Frees `<ptr>` from the arena so it may be reused again.
@@ -104,7 +104,7 @@ Vectors are dynamic arrays. They own an expanding buffer to hold new elements.
 Vectors also cache their size and capacity for runtime checks when accessing memory.
 
 Vectors are excellent general-use data structures for storing multiple elements.
-Indexing into vectors provide the fastest random access to their elements.
+Indexing into vectors provides the fastest random access to their elements.
 Inserting and removing into the back of a vector is also very fast.
 
 Returns a new vector with a current capacity of `<capacity>` elements.
@@ -115,8 +115,8 @@ This data structure must be deleted with `vector_delete()`.
 vector             vector_new           ( size_t capacity )
 ```
 
-Returns a new vector shallow copied from `<vector>`.
-This data structure must be deleted with `vector_delete()`.
+Returns a new vector copied from `<vector>`.
+The new vector owns its own memory and must be deleted with `vector_delete()`.
 
 ```c
 vector             vector_copy          ( const vector* vector )
@@ -200,7 +200,8 @@ The vector must not be empty.
 void               vector_pop           ( vector* self )
 ```
 
-Reverses and returns the vector.
+Reverses the vector.
+Returns a pointer to the vector's array.
 
 ```c
 T*                 vector_reverse       ( vector* self )
@@ -276,8 +277,8 @@ This data structure must be deleted with `string_delete()`.
 string             string_new           ( const char* str )
 ```
 
-Returns a new string shallow copied from `<string>`.
-This data structure must be deleted with `string_delete()`.
+Returns a new string copied from `<string>`.
+The new string owns its own memory and must be deleted with `string_delete()`.
 
 ```c
 string             string_copy          ( const string* str )
@@ -376,14 +377,14 @@ const char*        string_prepend       ( string* self, const char* str )
 ```
 
 Returns the index of the first sequence of characters matching `<str>`.
-Returns `-1` if no string was found.
+Returns `ds_NOT_FOUND` if no string was found.
 
 ```c
 size_t             string_find          ( const string* self, const char* str )
 ```
 
 Returns the index of the last sequence of characters matching `<str>`.
-Returns `-1` if no string was found.
+Returns `ds_NOT_FOUND` if no string was found.
 
 ```c
 size_t             string_find_last     ( const string* self, const char* str )
@@ -512,9 +513,9 @@ This is the underlying list_node type. You must not modify its pointers.
 
 ```c
 typedef struct {
-     T                   data;
-     list_node* const    previous;
-     list_node* const    next;
+     T              data;
+     list_node*     previous;
+     list_node*     next;
 } list_node;
 ```
 
@@ -525,8 +526,8 @@ This data structure must be deleted with `list_delete()`.
 list               list_new             ( void )
 ```
 
-Returns a new list shallow copied from `<list>`.
-This data structure must be deleted with `list_delete()`.
+Returns a new list copied from `<list>`.
+The new list owns its own memory and must be deleted with `list_delete()`.
 
 ```c
 list               list_copy            ( const list* list )
@@ -677,8 +678,8 @@ This data structure must be deleted with `queue_delete()`.
 queue              queue_new            ( void )
 ```
 
-Returns a new queue shallow copied from `<queue>`.
-This data structure must be deleted with `queue_delete()`.
+Returns a new queue copied from `<queue>`.
+The new queue owns its own memory and must be deleted with `queue_delete()`.
 
 ```c
 queue              queue_copy           ( const queue* queue )
@@ -792,8 +793,8 @@ This data structure must be deleted with `set_delete()`.
 set                set_new              ( void )
 ```
 
-Returns a new set shallow copied from `<set>`.
-This data structure must be deleted with `set_delete()`.
+Returns a new set copied from `<set>`.
+The new set owns its own memory and must be deleted with `set_delete()`.
 
 ```c
 set                set_copy             ( const set* set )
@@ -929,8 +930,8 @@ This data structure must be deleted with `map_delete()`.
 map                map_new              ( size_t capacity )
 ```
 
-Returns a new map shallow copied from `<map>`.
-This data structure must be deleted with `map_delete()`.
+Returns a new map copied from `<map>`.
+The new map owns its own memory and must be deleted with `map_delete()`.
 
 ```c
 map                map_copy             ( const map* map )
@@ -1098,10 +1099,10 @@ shared             shared_new           ( T data )
 ```
 
 Returns a new shared reference with the same address as `<shared>`.
-This data structure must be deleted with `shared_delete()`.
+The new shared reference increments the shared count and must be deleted with `shared_delete()`.
 
 ```c
-shared             shared_copy          ( shared* shared )
+shared             shared_copy          ( const shared* shared )
 ```
 
 Returns the number of shared references to `<self>`'s data.
@@ -1161,14 +1162,14 @@ Returns a new weak reference from `<shared>`.
 This data structure must be deleted with `weak_delete()`.
 
 ```c
-weak               weak_new             ( shared* shared )
+weak               weak_new             ( const shared* shared )
 ```
 
 Returns a new weak reference with the same address as `<weak>`.
-This data structure must be deleted with `weak_delete()`.
+The new weak reference increments the weak count and must be deleted with `weak_delete()`.
 
 ```c
-weak               weak_copy            ( weak* weak )
+weak               weak_copy            ( const weak* weak )
 ```
 
 Returns the number of shared references to `<self>`'s data.
@@ -1228,8 +1229,8 @@ This data structure must be deleted with `slab_delete()`.
 slab               slab_new             ( size_t capacity )
 ```
 
-Returns a new slab shallow copied from `<slab>`.
-This data structure must be deleted with `slab_delete()`.
+Returns a new slab copied from `<slab>`.
+The new slab owns its own memory and must be deleted with `slab_delete()`.
 
 ```c
 slab               slab_copy            ( const slab* slab )
@@ -1275,7 +1276,7 @@ const T*           slab_get_const       ( const slab* self, slab_id id )
 
 Allocates a new object in the slab with `<data>`.
 This may resize the buckets and invalidate pointers, so store the ID.
-Returns the objects new ID.
+Returns the object's new ID.
 
 ```c
 slab_id            slab_borrow          ( slab* self, T data )
@@ -1313,12 +1314,13 @@ ds_DECLARE_SIGNAL_NAMED(
      name,               - The name of the data structure and function prefix.
      T,                  - The type to generate this data structure with.
                            A pointer to T is always the first argument of the function signature.
+                           You can use void here if you would like multicast signals.
      R,                  - The return type of the function signature.
      A...,               - Optionally any argument types of the function signature.
 )
 ```
 
-Signals are collections of bindings of objects to functions.
+Signals are collections of object to function bindings.
 These functions share the same signature and the signal can call each function at once.
 The signal will pass the same arguments to each function so each object is updated.
 
@@ -1329,7 +1331,7 @@ Objects must unbind themselves on destruction to avoid invalid memory access on 
 signal_func is an alias for a pointer to the function signature.
 
 ```c
-typedef R (*)(T*, A...) signal_func;
+typedef R (*signal_func) (T*, A...);
 ```
 
 Returns a new signal with a current capacity of `<capacity>` bindings.
@@ -1340,8 +1342,8 @@ This data structure must be deleted with `signal_delete()`.
 signal             signal_new           ( size_t capacity )
 ```
 
-Returns a new signal shallow copied from `<signal>`.
-This data structure must be deleted with `signal_delete()`.
+Returns a new signal copied from `<signal>`.
+The new signal owns its own memory and must be deleted with `signal_delete()`.
 
 ```c
 signal             signal_copy          ( const signal* signal )
@@ -1381,6 +1383,7 @@ void               signal_unbind        ( signal* self, signal_handle handle )
 
 This is a macro, not a function.
 Invokes `<self>` with the given arguments.
+Bindings are not invoked in any particular order.
 `<args>` must match the function signature and are passed to each binding.
 The signal can be mutated while being invoked.
 

@@ -56,7 +56,7 @@ typedef struct {\
 \
 ds_API static inline name name##_new(T data) {\
     T *self = (T *) ds_malloc(sizeof(T));\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     *self = data;\
     return (name) {\
         self,\
@@ -64,27 +64,27 @@ ds_API static inline name name##_new(T data) {\
 }\
 \
 ds_API static inline T *name##_get(name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->data != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->data != ds_NULL);\
     return self->data;\
 }\
 \
 ds_API static inline const T *name##_get_const(const name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->data != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->data != ds_NULL);\
     return self->data;\
 }\
 \
 ds_API static inline void name##_reset(name *self, T data) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->data != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->data != ds_NULL);\
     deleter(self->data);\
     *self->data = data;\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
-    ds_assert(self->data != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(self->data != ds_NULL);\
     deleter(self->data);\
     ds_free(self->data);\
     *self = (name) {0};\

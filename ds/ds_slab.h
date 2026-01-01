@@ -26,8 +26,8 @@
  *
  *   slab         slab_new            ( size_t capacity )
  *
- * * Returns a new slab shallow copied from <slab>.
- * * This data structure must be deleted with slab_delete().
+ * * Returns a new slab copied from <slab>.
+ * * The new slab owns its own memory and must be deleted with slab_delete().
  *
  *   slab         slab_copy           ( const slab* slab )
  *
@@ -59,7 +59,7 @@
  *
  * * Allocates a new object in the slab with <data>.
  * * This may resize the buckets and invalidate pointers, so store the ID.
- * * Returns the objects new ID.
+ * * Returns the object's new ID.
  *
  *   slab_id      slab_borrow         ( slab* self, T data )
  *
@@ -120,7 +120,7 @@ ds_API static inline name name##_new(ds_size capacity) {\
 }\
 \
 ds_API static inline name name##_copy(const name *slab) {\
-    ds_assert(slab != NULL);\
+    ds_assert(slab != ds_NULL);\
     return (name) {\
         slab->count,\
         slab->next,\
@@ -129,25 +129,25 @@ ds_API static inline name name##_copy(const name *slab) {\
 }\
 \
 ds_API static inline ds_size name##_count(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->count;\
 }\
 \
 ds_API static inline ds_size name##_capacity(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->buckets.capacity;\
 }\
 \
 ds_API static inline ds_bool name##_empty(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return self->count == 0;\
 }\
 \
 ds_API static inline ds_bool name##_valid(const name *self, name##_id id) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     const ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     if (self->count == 0 || id.index >= vector->count) {\
         return ds_false;\
     }\
@@ -156,30 +156,30 @@ ds_API static inline ds_bool name##_valid(const name *self, name##_id id) {\
 }\
 \
 ds_API static inline T *name##_get(name *self, name##_id id) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(name##_valid(self, id));\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     ds_assert(id.index < vector->count);\
     return &vector->array[id.index].data;\
 }\
 \
 ds_API static inline const T *name##_get_const(const name *self, name##_id id) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(name##_valid(self, id));\
     const ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     ds_assert(id.index < vector->count);\
     return &vector->array[id.index].data;\
 }\
 \
 ds_API static inline name##_id name##_borrow(name *self, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     name##_id id = self->next;\
     if (id.index == vector->count) {\
         ds__##name##_vector_push(\
@@ -206,12 +206,12 @@ ds_API static inline name##_id name##_borrow(name *self, T data) {\
 }\
 \
 ds_API static inline void name##_return(name *self, name##_id id) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->count > 0);\
     ds_assert(name##_valid(self, id));\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     ds_assert(id.index < vector->count);\
     --self->count;\
     if (self->next.index > id.index) {\
@@ -222,10 +222,10 @@ ds_API static inline void name##_return(name *self, name##_id id) {\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     if (self->count == 0) {\
         return;\
     }\
@@ -248,11 +248,11 @@ ds_API static inline void name##_clear(name *self) {\
 }\
 \
 ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(action != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(action != ds_NULL);\
     const ds__##name##_vector *vector = &self->buckets;\
     ds_assert(self->count <= vector->count);\
-    ds_assert(vector->array != NULL);\
+    ds_assert(vector->array != ds_NULL);\
     ds_size remaining = self->count;\
     for (ds_size i = 0; remaining > 0 && i < vector->count; ++i) {\
         if (vector->array[i].age == 0) {\
@@ -265,7 +265,7 @@ ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     name##_clear(self);\
     ds__##name##_vector_delete(&self->buckets);\
     *self = (name) {0};\

@@ -26,8 +26,8 @@
  *
  *   string           string_new              ( const char* str )
  *
- * * Returns a new string shallow copied from <string>.
- * * This data structure must be deleted with string_delete().
+ * * Returns a new string copied from <string>.
+ * * The new string owns its own memory and must be deleted with string_delete().
  *
  *   string           string_copy             ( const string* str )
  *
@@ -98,12 +98,12 @@
  *   const char*      string_prepend          ( string* self, const char* str )
  *
  * * Returns the index of the first sequence of characters matching <str>.
- * * Returns -1 if no string was found.
+ * * Returns ds_NOT_FOUND if no string was found.
  *
  *   size_t           string_find             ( const string* self, const char* str )
  *
  * * Returns the index of the last sequence of characters matching <str>.
- * * Returns -1 if no string was found.
+ * * Returns ds_NOT_FOUND if no string was found.
  *
  *   size_t           string_find_last        ( const string* self, const char* str )
  *
@@ -189,7 +189,7 @@
 #define ds_DECLARE_STRING_NAMED(name, T)\
 \
 ds_API static inline ds_size ds__##name##_strlen(const T *str) {\
-    ds_assert(str != NULL);\
+    ds_assert(str != ds_NULL);\
     ds_size length = 0;\
     while (*str != 0) {\
         ++length;\
@@ -199,8 +199,8 @@ ds_API static inline ds_size ds__##name##_strlen(const T *str) {\
 }\
 \
 ds_API static inline ds_int ds__##name##_strcmp(const T *left, const T *right) {\
-    ds_assert(left != NULL);\
-    ds_assert(right != NULL);\
+    ds_assert(left != ds_NULL);\
+    ds_assert(right != ds_NULL);\
     while (*left != 0 && *right != 0 && (*left == *right)) {\
         left++;\
         right++;\
@@ -209,8 +209,8 @@ ds_API static inline ds_int ds__##name##_strcmp(const T *left, const T *right) {
 }\
 \
 ds_API static inline ds_int ds__##name##_strncmp(const T *left, const T *right, ds_size length) {\
-    ds_assert(left != NULL);\
-    ds_assert(right != NULL);\
+    ds_assert(left != ds_NULL);\
+    ds_assert(right != ds_NULL);\
     for (ds_size i = 0; i < length; ++i) {\
         if (left[i] != right[i]) {\
             return (ds_int) ((ds_uint) left[i] - (ds_uint) right[i]);\
@@ -229,7 +229,7 @@ typedef struct {\
 } name;\
 \
 ds_API static inline name name##_new(const T *str) {\
-    ds_assert(str != NULL);\
+    ds_assert(str != ds_NULL);\
     ds_size length = ds__##name##_strlen(str);\
     name self = (name) {\
         ds__##name##_vector_new(length + 1),\
@@ -240,42 +240,42 @@ ds_API static inline name name##_new(const T *str) {\
 }\
 \
 ds_API static inline name name##_copy(const name *str) {\
-    ds_assert(str != NULL);\
+    ds_assert(str != ds_NULL);\
     return (name) {\
         ds__##name##_vector_copy(&str->buffer),\
     };\
 }\
 \
 ds_API static inline ds_size name##_length(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.count;\
 }\
 \
 ds_API static inline ds_size name##_capacity(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.capacity;\
 }\
 \
 ds_API static inline ds_bool name##_empty(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return self->buffer.count == 0;\
 }\
 \
 ds_API static inline T name##_get(const name *self, ds_size index) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_assert(index < self->buffer.count);\
     return self->buffer.array[index];\
 }\
 \
 ds_API static inline const T *name##_set(name *self, ds_size index, T data) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_assert(index < self->buffer.count);\
     if (ds_VECTOR_TRUNC_ASSERT) {\
         ds_assert(data != 0);\
@@ -288,17 +288,17 @@ ds_API static inline const T *name##_set(name *self, ds_size index, T data) {\
 }\
 \
 ds_API static inline const T *name##_cstr(const name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     return self->buffer.array;\
 }\
 \
 ds_API static inline const T *name##_substr(name *self, ds_size index, ds_size length) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(index <= self->buffer.count);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     if (length == 0) {\
         self->buffer.count = 0;\
         self->buffer.array[0] = 0;\
@@ -317,17 +317,17 @@ ds_API static inline const T *name##_substr(name *self, ds_size index, ds_size l
 }\
 \
 ds_API static inline ds_int name##_compare(const name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     return ds__##name##_strcmp(self->buffer.array, str);\
 }\
 \
 ds_API static inline void name##_resize(name *self, ds_size length) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     if (ds_VECTOR_TRUNC_ASSERT) {\
         ds_assert(length >= self->buffer.count);\
     }\
@@ -342,11 +342,11 @@ ds_API static inline void name##_resize(name *self, ds_size length) {\
 }\
 \
 ds_API static inline const T *name##_insert(name *self, ds_size index, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(index <= self->buffer.count);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size length = ds__##name##_strlen(str);\
     if (self->buffer.count + length + 1 > self->buffer.capacity) {\
         ds__##name##_vector_resize(&self->buffer, self->buffer.count + length + 1);\
@@ -363,10 +363,10 @@ ds_API static inline const T *name##_insert(name *self, ds_size index, const T *
 }\
 \
 ds_API static inline const T *name##_erase(name *self, ds_size index, ds_size length) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(index < self->buffer.count);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     if (length == 0) {\
         return self->buffer.array;\
     }\
@@ -384,24 +384,24 @@ ds_API static inline const T *name##_erase(name *self, ds_size index, ds_size le
 }\
 \
 ds_API static inline const T *name##_append(name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return name##_insert(self, self->buffer.count, str);\
 }\
 \
 ds_API static inline const T *name##_prepend(name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     return name##_insert(self, 0, str);\
 }\
 \
 ds_API static inline ds_size name##_find(const name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size length = ds__##name##_strlen(str);\
     if (length == 0 || length > self->buffer.count) {\
         return ds_NOT_FOUND;\
@@ -415,10 +415,10 @@ ds_API static inline ds_size name##_find(const name *self, const T *str) {\
 }\
 \
 ds_API static inline ds_size name##_find_last(const name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size length = ds__##name##_strlen(str);\
     if (length == 0 || length > self->buffer.count) {\
         return ds_NOT_FOUND;\
@@ -432,17 +432,17 @@ ds_API static inline ds_size name##_find_last(const name *self, const T *str) {\
 }\
 \
 ds_API static inline ds_bool name##_contains(const name *self, const T *str) {\
-    ds_assert(self != NULL);\
-    ds_assert(str != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(str != ds_NULL);\
     return name##_find(self, str) != ds_NOT_FOUND;\
 }\
 \
 ds_API static inline const T *name##_replace_first(name *self, const T *find, const T *replace) {\
-    ds_assert(self != NULL);\
-    ds_assert(find != NULL);\
-    ds_assert(replace != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(find != ds_NULL);\
+    ds_assert(replace != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size index = name##_find(self, find);\
     if (index == ds_NOT_FOUND) {\
         return self->buffer.array;\
@@ -454,11 +454,11 @@ ds_API static inline const T *name##_replace_first(name *self, const T *find, co
 }\
 \
 ds_API static inline const T *name##_replace_last(name *self, const T *find, const T *replace) {\
-    ds_assert(self != NULL);\
-    ds_assert(find != NULL);\
-    ds_assert(replace != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(find != ds_NULL);\
+    ds_assert(replace != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size index = name##_find_last(self, find);\
     if (index == ds_NOT_FOUND) {\
         return self->buffer.array;\
@@ -470,11 +470,11 @@ ds_API static inline const T *name##_replace_last(name *self, const T *find, con
 }\
 \
 ds_API static inline const T *name##_replace_all(name *self, const T *find, const T *replace) {\
-    ds_assert(self != NULL);\
-    ds_assert(find != NULL);\
-    ds_assert(replace != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(find != ds_NULL);\
+    ds_assert(replace != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size find_len = ds__##name##_strlen(find);\
     ds_size replace_len = ds__##name##_strlen(replace);\
     if (find_len == 0) {\
@@ -501,14 +501,14 @@ ds_API static inline const T *name##_replace_all(name *self, const T *find, cons
 }\
 \
 ds_API static inline const T *name##_reverse(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     return ds__##name##_vector_reverse(&self->buffer);\
 }\
 \
 ds_API static inline const T *name##_lower(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     for (ds_size i = 0; i < self->buffer.count; ++i) {\
         self->buffer.array[i] = (T) ds_tolower((ds_int) self->buffer.array[i]);\
     }\
@@ -516,9 +516,9 @@ ds_API static inline const T *name##_lower(name *self) {\
 }\
 \
 ds_API static inline const T *name##_upper(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     for (ds_size i = 0; i < self->buffer.count; ++i) {\
         self->buffer.array[i] = (T) ds_tolower((ds_int) self->buffer.array[i]);\
     }\
@@ -526,9 +526,9 @@ ds_API static inline const T *name##_upper(name *self) {\
 }\
 \
 ds_API static inline const T *name##_trim(name *self, ds_bool resize) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size start = 0;\
     ds_size end = self->buffer.count;\
     while (start < end && ds_isspace((ds_int) self->buffer.array[start])) {\
@@ -550,18 +550,18 @@ ds_API static inline const T *name##_trim(name *self, ds_bool resize) {\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     self->buffer.count = 0;\
     self->buffer.array[0] = 0;\
 }\
 \
 ds_API static inline const T *name##_map(name *self, T(*transform)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(transform != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(transform != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     for (ds_size i = 0; i < self->buffer.count; ++i) {\
         self->buffer.array[i] = transform(self->buffer.array[i]);\
         if (ds_VECTOR_TRUNC_ASSERT) {\
@@ -576,29 +576,29 @@ ds_API static inline const T *name##_map(name *self, T(*transform)(T)) {\
 }\
 \
 ds_API static inline ds_size name##_filter(name *self, ds_bool(*predicate)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(predicate != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(predicate != ds_NULL);\
     ds_assert(self->buffer.count < self->buffer.capacity);\
-    ds_assert(self->buffer.array != NULL);\
+    ds_assert(self->buffer.array != ds_NULL);\
     ds_size count = ds__##name##_vector_filter(&self->buffer, predicate);\
     self->buffer.array[count] = 0;\
     return count;\
 }\
 \
 ds_API static inline T name##_reduce(const name *self, T start, T(*accumulator)(T, T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(accumulator != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(accumulator != ds_NULL);\
     return ds__##name##_vector_reduce(&self->buffer, start, accumulator);\
 }\
 \
 ds_API static inline void name##_foreach(const name *self, void(*action)(T)) {\
-    ds_assert(self != NULL);\
-    ds_assert(action != NULL);\
+    ds_assert(self != ds_NULL);\
+    ds_assert(action != ds_NULL);\
     ds__##name##_vector_foreach(&self->buffer, action);\
 }\
 \
 ds_API static inline void name##_delete(name *self) {\
-    ds_assert(self != NULL);\
+    ds_assert(self != ds_NULL);\
     ds__##name##_vector_delete(&self->buffer);\
     *self = (name) {0};\
 }

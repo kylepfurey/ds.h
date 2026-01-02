@@ -520,7 +520,7 @@ ds_API static inline const T *name##_upper(name *self) {\
     ds_assert(self->buffer.count < self->buffer.capacity);\
     ds_assert(self->buffer.array != ds_NULL);\
     for (ds_size i = 0; i < self->buffer.count; ++i) {\
-        self->buffer.array[i] = (T) ds_tolower((ds_int) self->buffer.array[i]);\
+        self->buffer.array[i] = (T) ds_toupper((ds_int) self->buffer.array[i]);\
     }\
     return self->buffer.array;\
 }\

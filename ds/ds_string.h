@@ -9,7 +9,7 @@
  *      name,               - The name of the data structure and function prefix.
  *
  *      T,                  - The character type to generate this data structure with.
-* )
+ * )
  *
  * The "string" struct is automatically generated with the char type.
  *

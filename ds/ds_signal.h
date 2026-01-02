@@ -128,14 +128,14 @@ ds_API static inline ds_bool name##_empty(const name *self) {\
 \
 ds_API static inline ds_bool name##_bound(const name *self, name##_handle handle) {\
     ds_assert(self != ds_NULL);\
-    return ds__##name##_slab_valid(&self->bindings, (ds__##name##_slab_id) handle);\
+    return ds__##name##_slab_valid(&self->bindings, handle);\
 }\
 \
 ds_API static inline name##_handle name##_bind(name *self, T *target, name##_func func) {\
     ds_assert(self != ds_NULL);\
     ds_assert(target != ds_NULL);\
     ds_assert(func != ds_NULL);\
-    return (name##_handle ) ds__##name##_slab_borrow(\
+    return ds__##name##_slab_borrow(\
         &self->bindings,\
         (ds__##name##_binding) {\
             target,\
@@ -147,7 +147,7 @@ ds_API static inline name##_handle name##_bind(name *self, T *target, name##_fun
 ds_API static inline void name##_unbind(name *self, name##_handle handle) {\
     ds_assert(self != ds_NULL);\
     ds_assert(name##_bound(self, handle));\
-    ds__##name##_slab_return(&self->bindings, (ds__##name##_slab_id) handle);\
+    ds__##name##_slab_return(&self->bindings, handle);\
 }\
 \
 ds_API static inline void name##_clear(name *self) {\

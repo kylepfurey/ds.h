@@ -1,5 +1,5 @@
 // .h
-// Generic Shared Reference Data Structure
+// ds.h Shared Reference Data Structure
 // by Kyle Furey
 
 /**

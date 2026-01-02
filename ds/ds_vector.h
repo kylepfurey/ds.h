@@ -1,5 +1,5 @@
 // .h
-// Generic Dynamic Array Data Structure
+// ds.h Dynamic Array Data Structure
 // by Kyle Furey
 
 /**

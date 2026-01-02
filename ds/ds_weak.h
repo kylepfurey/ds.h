@@ -1,5 +1,5 @@
 // .h
-// Generic Weak Reference Data Structure
+// ds.h Weak Reference Data Structure
 // by Kyle Furey
 
 /**

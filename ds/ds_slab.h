@@ -1,5 +1,5 @@
 // .h
-// Generic Slab Allocator Data Structure
+// ds.h Slab Allocator Data Structure
 // by Kyle Furey
 
 /**

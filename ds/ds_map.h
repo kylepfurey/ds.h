@@ -1,5 +1,5 @@
 // .h
-// Generic Key-Value Hash Map Data Structure
+// ds.h Key-Value Hash Map Data Structure
 // by Kyle Furey
 
 /**

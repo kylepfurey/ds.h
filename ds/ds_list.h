@@ -1,5 +1,5 @@
 // .h
-// Generic Doubly Linked List Data Structure
+// ds.h Doubly Linked List Data Structure
 // by Kyle Furey
 
 /**
@@ -24,10 +24,10 @@
  *
  * * This is the underlying list_node type. You must not modify its pointers.
  *
- *   typedef struct {
- *        T              data;
- *        list_node*     previous;
- *        list_node*     next;
+ *   typedef struct list_node {
+ *        T               data;
+ *        list_node*      previous;
+ *        list_node*      next;
  *   } list_node;
  *
  * * Returns a new list.
@@ -142,7 +142,7 @@ typedef struct {\
     struct name##_node *tail;\
 } name;\
 \
-ds_API static inline name name##_new() {\
+ds_API static inline name name##_new(void) {\
     return (name) {\
         0,\
         ds_NULL,\

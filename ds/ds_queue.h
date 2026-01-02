@@ -1,5 +1,5 @@
 // .h
-// Generic Priority Queue Structure
+// ds.h Priority Queue Structure
 // by Kyle Furey
 
 /**
@@ -110,7 +110,7 @@ typedef struct {\
     ds__##name##_list queue;\
 } name;\
 \
-ds_API static inline name name##_new() {\
+ds_API static inline name name##_new(void) {\
     return (name) {\
         ds__##name##_list_new(),\
     };\

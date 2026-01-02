@@ -1,5 +1,5 @@
 // .h
-// Generic Unique Reference Data Structure
+// ds.h Unique Reference Data Structure
 // by Kyle Furey
 
 /**

@@ -1,5 +1,5 @@
 // .h
-// Generic Sorted Binary Tree Set Data Structure
+// ds.h Sorted Binary Tree Set Data Structure
 // by Kyle Furey
 
 /**
@@ -127,7 +127,7 @@ typedef struct {\
     ds__##name##_node *root;\
 } name;\
 \
-ds_API static inline name name##_new() {\
+ds_API static inline name name##_new(void) {\
     return (name) {\
         0,\
         ds_NULL,\

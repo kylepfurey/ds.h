@@ -1,5 +1,5 @@
 // .h
-// Generic Data Structure Library
+// ds.h Data Structure Library
 // by Kyle Furey
 
 /**
@@ -13,7 +13,7 @@
  * The library includes are as follows:
  *
  * ds_std.h         - C Standard Library Includes
- * ds_def.h         - ds.h Macro, Type, and Function Declarations
+ * ds_def.h         - ds.h Macros, Types, and Function Declarations
  * ds_arena.h       - Block Allocator
  * ds_vector.h      - Dynamic Array
  * ds_string.h      - Mutable String
@@ -26,6 +26,7 @@
  * ds_weak.h        - Weak Reference
  * ds_slab.h        - Slab Allocator
  * ds_signal.h      - Multicast Event
+ * ds_optional.h    - Optional Value
  */
 
 #ifndef DS_H
@@ -45,5 +46,6 @@
 #include "ds/ds_weak.h"
 #include "ds/ds_slab.h"
 #include "ds/ds_signal.h"
+#include "ds/ds_optional.h"
 
 #endif // DS_H

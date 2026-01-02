@@ -1,6 +1,6 @@
 # ds.h
 
-This is a generic header-only C99 core data structure library. Each header file in the ds folder provides macros for generating type-safe data structures. Each data structure's API is documented in a top-level comment and in this README file below.
+This is a header-only C99 core data structure library. Each header file in the ds folder provides macros for generating type-safe data structures. Each data structure's API is documented in a top-level comment and in this README file below.
 
 ## Table of Contents
 
@@ -17,6 +17,7 @@ This is a generic header-only C99 core data structure library. Each header file 
 10. [Weak Reference](#ds_weakh)
 11. [Slab Allocator](#ds_slabh)
 12. [Multicast Signal](#ds_signalh)
+13. [Optional Value](#ds_optionalh)
 
 ## Caveats
 
@@ -34,8 +35,8 @@ This library, while simple, is not without its faults. There are some key notes 
 
 ```c
 ds_DECLARE_ARENA_NAMED(
-     name,               - The name of the data structure and function prefix.
-     alignment,          - The alignment of allocated arena memory.
+     name,                   - The name of the data structure and function prefix.
+     alignment,              - The alignment of allocated arena memory.
 )
 ```
 
@@ -51,52 +52,52 @@ Returns a new arena with at least `<size>` bytes of aligned memory.
 This data structure must be deleted with `arena_delete()`.
 
 ```c
-arena              arena_new            ( size_t size )
+arena              arena_new                    ( size_t size )
 ```
 
 Allocates at least `<size>` number of bytes.
 Returns a new pointer or `NULL`.
 
 ```c
-void*              arena_malloc         ( arena* self, size_t size )
+void*              arena_malloc                 ( arena* self, size_t size )
 ```
 
 Allocates a `<count>` * `<size>` array of zeroed memory.
 Returns a new pointer or `NULL`.
 
 ```c
-void*              arena_calloc         ( arena* self, size_t count, size_t size )
+void*              arena_calloc                 ( arena* self, size_t count, size_t size )
 ```
 
 Reallocates `<ptr>` to have at least `<size>` bytes.
 Returns a new pointer or `NULL`.
 
 ```c
-void*              arena_realloc        ( arena* self, void* ptr, size_t size )
+void*              arena_realloc                ( arena* self, void* ptr, size_t size )
 ```
 
 Frees `<ptr>` from the arena so it may be reused again.
 `<ptr>` can be `NULL`.
 
 ```c
-void               arena_free           ( arena* self, void* ptr )
+void               arena_free                   ( arena* self, void* ptr )
 ```
 
 Safely deletes an arena.
 If `ds_ARENA_LEAK_ASSERT` is true, this will assert if the arena leaked memory.
 
 ```c
-void               arena_delete         ( arena* self )
+void               arena_delete                 ( arena* self )
 ```
 
 ## [ds_vector.h](ds/ds_vector.h)
 
 ```c
 ds_DECLARE_VECTOR_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -112,105 +113,105 @@ Returns a new vector with a current capacity of `<capacity>` elements.
 This data structure must be deleted with `vector_delete()`.
 
 ```c
-vector             vector_new           ( size_t capacity )
+vector             vector_new                   ( size_t capacity )
 ```
 
 Returns a new vector copied from `<vector>`.
 The new vector owns its own memory and must be deleted with `vector_delete()`.
 
 ```c
-vector             vector_copy          ( const vector* vector )
+vector             vector_copy                  ( const vector* vector )
 ```
 
 Returns the number of elements in the vector.
 
 ```c
-size_t             vector_count         ( const vector* self )
+size_t             vector_count                 ( const vector* self )
 ```
 
 Returns the current maximum number of elements that can be contained in the vector.
 
 ```c
-size_t             vector_capacity      ( const vector* self )
+size_t             vector_capacity              ( const vector* self )
 ```
 
 Returns whether the vector is empty.
 
 ```c
-bool               vector_empty         ( const vector* self )
+bool               vector_empty                 ( const vector* self )
 ```
 
 Returns a pointer to the element in the vector at `<index>`.
 `<index>` must be a valid index.
 
 ```c
-T*                 vector_get           ( vector* self, size_t index )
+T*                 vector_get                   ( vector* self, size_t index )
 ```
 
 Returns a pointer to the element in the vector at `<index>`.
 `<index>` must be a valid index.
 
 ```c
-const T*           vector_get_const     ( const vector* self, size_t index )
+const T*           vector_get_const             ( const vector* self, size_t index )
 ```
 
 Returns a pointer to the vector's array.
 
 ```c
-T*                 vector_array         ( vector* self )
+T*                 vector_array                 ( vector* self )
 ```
 
 Returns a pointer to the vector's array.
 
 ```c
-const T*           vector_array_const   ( const vector* self )
+const T*           vector_array_const           ( const vector* self )
 ```
 
 Resizes the vector to contain `<capacity>` number of elements.
 If `ds_VECTOR_TRUNC_ASSERT` is true, this will assert if elements are deleted.
 
 ```c
-void               vector_resize        ( vector* self, size_t capacity )
+void               vector_resize                ( vector* self, size_t capacity )
 ```
 
 Inserts `<data>` at `<index>` into the vector.
 `<index>` must be a valid index or the end of the vector.
 
 ```c
-void               vector_insert        ( vector* self, size_t index, T data )
+void               vector_insert                ( vector* self, size_t index, T data )
 ```
 
 Erases the element at `<index>` from the vector.
 `<index>` must be a valid index.
 
 ```c
-void               vector_erase         ( vector* self, size_t index )
+void               vector_erase                 ( vector* self, size_t index )
 ```
 
 Inserts `<data>` at the end of the vector.
 
 ```c
-void               vector_push          ( vector* self, T data )
+void               vector_push                  ( vector* self, T data )
 ```
 
 Deletes the element at the end of the vector.
 The vector must not be empty.
 
 ```c
-void               vector_pop           ( vector* self )
+void               vector_pop                   ( vector* self )
 ```
 
 Reverses the vector.
 Returns a pointer to the vector's array.
 
 ```c
-T*                 vector_reverse       ( vector* self )
+T*                 vector_reverse               ( vector* self )
 ```
 
 Deletes all elements in a vector.
 
 ```c
-void               vector_clear         ( vector* self )
+void               vector_clear                 ( vector* self )
 ```
 
 Iterates and mutates the vector.
@@ -219,7 +220,7 @@ Elements in the vector are not deleted, only updated.
 Returns the vector's data.
 
 ```c
-T*                 vector_map           ( vector* self, T(*transform)(T) )
+T*                 vector_map                   ( vector* self, T(*transform)(T) )
 ```
 
 Iterates and mutates the vector.
@@ -227,7 +228,7 @@ This deletes elements that return false in `<predicate>`.
 Returns the new size of the vector.
 
 ```c
-size_t             vector_filter        ( vector* self, bool(*predicate)(T) )
+size_t             vector_filter                ( vector* self, bool(*predicate)(T) )
 ```
 
 Iterates the vector and computes a value.
@@ -236,27 +237,27 @@ Each element is "applied" to `<start>` using `<accumulator>`:
 Returns the accumulated value.
 
 ```c
-T                  vector_reduce        ( vector* self, T start, T(*accumulator)(T, T) )
+T                  vector_reduce                ( vector* self, T start, T(*accumulator)(T, T) )
 ```
 
 Iterates the vector calling `<action>` on each element.
 
 ```c
-void               vector_foreach       ( const vector* self, void(*action)(T) )
+void               vector_foreach               ( const vector* self, void(*action)(T) )
 ```
 
 Safely deletes a vector.
 
 ```c
-void               vector_delete        ( vector* self )
+void               vector_delete                ( vector* self )
 ```
 
 ## [ds_string.h](ds/ds_string.h)
 
 ```c
 ds_DECLARE_STRING_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The character type to generate this data structure with.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The character type to generate this data structure with.
 )
 ```
 
@@ -274,39 +275,39 @@ Returns a new string with `<str>` copied into its buffer.
 This data structure must be deleted with `string_delete()`.
 
 ```c
-string             string_new           ( const char* str )
+string             string_new                   ( const char* str )
 ```
 
 Returns a new string copied from `<string>`.
 The new string owns its own memory and must be deleted with `string_delete()`.
 
 ```c
-string             string_copy          ( const string* str )
+string             string_copy                  ( const string* str )
 ```
 
 Returns the number of characters in the string.
 
 ```c
-size_t             string_length        ( const string* self )
+size_t             string_length                ( const string* self )
 ```
 
 Returns the current maximum number of characters that can be contained in the string.
 
 ```c
-size_t             string_capacity      ( const string* self )
+size_t             string_capacity              ( const string* self )
 ```
 
 Returns whether the string is empty.
 
 ```c
-bool               string_empty         ( const string* self )
+bool               string_empty                 ( const string* self )
 ```
 
 Returns the character in the string at `<index>`.
 `<index>` must be a valid index.
 
 ```c
-char               string_get           ( const string* self, size_t index )
+char               string_get                   ( const string* self, size_t index )
 ```
 
 Sets the character in the string at `<index>`.
@@ -315,13 +316,13 @@ If `ds_VECTOR_TRUNC_ASSERT` is true, this will assert if data is `0`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_set           ( string* self, size_t index, char data )
+const char*        string_set                   ( string* self, size_t index, char data )
 ```
 
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_cstr          ( const string* self )
+const char*        string_cstr                  ( const string* self )
 ```
 
 Mutates `<self>` to be the substring at `<index>` to `<index>` + `<length>`.
@@ -329,21 +330,21 @@ Mutates `<self>` to be the substring at `<index>` to `<index>` + `<length>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_substr        ( string* self, size_t index, size_t length )
+const char*        string_substr                ( string* self, size_t index, size_t length )
 ```
 
 Returns the difference in values between the first non-identical bytes.
 Returns `0` if both strings are identical.
 
 ```c
-int                string_compare       ( const string* self, const char* str )
+int                string_compare               ( const string* self, const char* str )
 ```
 
 Resizes the vector to contain `<length>` number of characters.
 If `ds_VECTOR_TRUNC_ASSERT` is true, this will assert if characters are deleted.
 
 ```c
-void               string_resize        ( string* self, size_t length )
+void               string_resize                ( string* self, size_t length )
 ```
 
 Inserts a copy of `<str>` into `<self>` at `<index>`.
@@ -351,7 +352,7 @@ Inserts a copy of `<str>` into `<self>` at `<index>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_insert        ( string* self, size_t index, const char* str )
+const char*        string_insert                ( string* self, size_t index, const char* str )
 ```
 
 Deletes the characters at `<index>` to `<index>` + `<length>`.
@@ -359,83 +360,83 @@ Deletes the characters at `<index>` to `<index>` + `<length>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_erase         ( string* self, size_t index, size_t length )
+const char*        string_erase                 ( string* self, size_t index, size_t length )
 ```
 
 Copies `<str>` to the end of the string.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_append        ( string* self, const char* str )
+const char*        string_append                ( string* self, const char* str )
 ```
 
 Copies `<str>` to the beginning of the string.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_prepend       ( string* self, const char* str )
+const char*        string_prepend               ( string* self, const char* str )
 ```
 
 Returns the index of the first sequence of characters matching `<str>`.
 Returns `ds_NOT_FOUND` if no string was found.
 
 ```c
-size_t             string_find          ( const string* self, const char* str )
+size_t             string_find                  ( const string* self, const char* str )
 ```
 
 Returns the index of the last sequence of characters matching `<str>`.
 Returns `ds_NOT_FOUND` if no string was found.
 
 ```c
-size_t             string_find_last     ( const string* self, const char* str )
+size_t             string_find_last             ( const string* self, const char* str )
 ```
 
 Returns whether the string contains a copy of `<str>`.
 
 ```c
-bool               string_contains      ( const string* self, const char* str )
+bool               string_contains              ( const string* self, const char* str )
 ```
 
 Replaces the first sequence of characters matching `<find>` with a copy of `<replace>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_replace_first ( string* self, const char* find, const char* replace )
+const char*        string_replace_first         ( string* self, const char* find, const char* replace )
 ```
 
 Replaces the last sequence of characters matching `<find>` with a copy of `<replace>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_replace_last  ( string* self, const char* find, const char* replace )
+const char*        string_replace_last          ( string* self, const char* find, const char* replace )
 ```
 
 Replaces all sequences of characters matching `<find>` with a copy of `<replace>`.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_replace_all   ( string* self, const char* find, const char* replace )
+const char*        string_replace_all           ( string* self, const char* find, const char* replace )
 ```
 
 Reverses the string.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_reverse       ( string* self )
+const char*        string_reverse               ( string* self )
 ```
 
 Converts the string to lowercase.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_lower         ( string* self )
+const char*        string_lower                 ( string* self )
 ```
 
 Converts the string to uppercase.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_upper         ( string* self )
+const char*        string_upper                 ( string* self )
 ```
 
 Trims whitespace at the beginning and end of the string.
@@ -443,13 +444,13 @@ If `<resize>` is true, the string is resized exactly to its minimum length.
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_trim          ( string* self, bool resize )
+const char*        string_trim                  ( string* self, bool resize )
 ```
 
 Deletes all characters in a string.
 
 ```c
-void               string_clear         ( string* self )
+void               string_clear                 ( string* self )
 ```
 
 Iterates and mutates the string.
@@ -458,7 +459,7 @@ If `ds_VECTOR_TRUNC_ASSERT` is true, this will assert if `<transform>` returns `
 Returns a pointer to the string's buffer.
 
 ```c
-const char*        string_map           ( string* self, char(*transform)(char) )
+const char*        string_map                   ( string* self, char(*transform)(char) )
 ```
 
 Iterates and mutates the string.
@@ -466,7 +467,7 @@ This deletes characters that return false in `<predicate>`.
 Returns the new size of the string.
 
 ```c
-size_t             string_filter        ( string* self, bool(*predicate)(char) )
+size_t             string_filter                ( string* self, bool(*predicate)(char) )
 ```
 
 Iterates the string and computes a character.
@@ -475,29 +476,29 @@ Each character is "applied" to `<start>` using `<accumulator>`:
 Returns the accumulated character.
 
 ```c
-char               string_reduce        ( string* self, char start, char(*accumulator)(char, char) )
+char               string_reduce                ( string* self, char start, char(*accumulator)(char, char) )
 ```
 
 Iterates the vector calling `<action>` on each character.
 
 ```c
-void               string_foreach       ( const string* self, void(*action)(char) )
+void               string_foreach               ( const string* self, void(*action)(char) )
 ```
 
 Safely deletes a string.
 
 ```c
-void               string_delete        ( string* self )
+void               string_delete                ( string* self )
 ```
 
 ## [ds_list.h](ds/ds_list.h)
 
 ```c
 ds_DECLARE_LIST_NAMED(
-     name,           - The name of the data structure and function prefix.
-     T,              - The type to generate this data structure with.
-     deleter,        - The name of the function used to deallocate T.
-                       ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -512,10 +513,10 @@ Iteration is slower than contiguous containers due to pointer chasing and cache 
 This is the underlying list_node type. You must not modify its pointers.
 
 ```c
-typedef struct {
-     T              data;
-     list_node*     previous;
-     list_node*     next;
+typedef struct list_node {
+     T             data;
+     list_node*    previous;
+     list_node*    next;
 } list_node;
 ```
 
@@ -523,144 +524,144 @@ Returns a new list.
 This data structure must be deleted with `list_delete()`.
 
 ```c
-list               list_new             ( void )
+list               list_new                     ( void )
 ```
 
 Returns a new list copied from `<list>`.
 The new list owns its own memory and must be deleted with `list_delete()`.
 
 ```c
-list               list_copy            ( const list* list )
+list               list_copy                    ( const list* list )
 ```
 
 Returns the number of nodes in the list.
 
 ```c
-size_t             list_count           ( const list* self )
+size_t             list_count                   ( const list* self )
 ```
 
 Returns whether the list is empty.
 
 ```c
-bool               list_empty           ( const list* self )
+bool               list_empty                   ( const list* self )
 ```
 
 Returns the node at the front of the list.
 The list must not be empty.
 
 ```c
-list_node*         list_front           ( list* self )
+list_node*         list_front                   ( list* self )
 ```
 
 Returns the node at the front of the list.
 The list must not be empty.
 
 ```c
-const list_node*   list_front_const     ( const list* self )
+const list_node*   list_front_const             ( const list* self )
 ```
 
 Returns the node at the end of the list.
 The list must not be empty.
 
 ```c
-list_node*         list_back            ( list* self )
+list_node*         list_back                    ( list* self )
 ```
 
 Returns the node at the end of the list.
 The list must not be empty.
 
 ```c
-const list_node*   list_back_const      ( const list* self )
+const list_node*   list_back_const              ( const list* self )
 ```
 
 Traverses the linked list to find and return a node.
 `<index>` must be valid.
 
 ```c
-list_node*         list_get             ( list* self, size_t index )
+list_node*         list_get                     ( list* self, size_t index )
 ```
 
 Traverses the linked list to find and return a node.
 `<index>` must be valid.
 
 ```c
-const list_node*   list_get_const       ( const list* self, size_t index )
+const list_node*   list_get_const               ( const list* self, size_t index )
 ```
 
 Prepends and returns a new node containing `<data>` before `<node>`.
 `<node>` must be owned by list.
 
 ```c
-list_node*         list_insert_before   ( list* self, list_node* node, T data )
+list_node*         list_insert_before           ( list* self, list_node* node, T data )
 ```
 
 Appends and returns a new node containing `<data>` after `<node>`.
 `<node>` must be owned by list.
 
 ```c
-list_node*         list_insert_after    ( list* self, list_node* node, T data )
+list_node*         list_insert_after            ( list* self, list_node* node, T data )
 ```
 
 Deletes a `<node>` from the list.
 `<node>` must be owned by list.
 
 ```c
-void               list_erase           ( list* self, list_node* node )
+void               list_erase                   ( list* self, list_node* node )
 ```
 
 Prepends and returns a new node containing `<data>` to the front of the list.
 
 ```c
-list_node*         list_push_front      ( list* self, T data )
+list_node*         list_push_front              ( list* self, T data )
 ```
 
 Appends and returns a new node containing `<data>` at the end of the list.
 
 ```c
-list_node*         list_push_back       ( list* self, T data )
+list_node*         list_push_back               ( list* self, T data )
 ```
 
 Deletes the node at the front of the list.
 
 ```c
-void               list_pop_front       ( list* self )
+void               list_pop_front               ( list* self )
 ```
 
 Deletes the node at the end of the list.
 
 ```c
-void               list_pop_back        ( list* self )
+void               list_pop_back                ( list* self )
 ```
 
 Deletes all nodes in the list.
 
 ```c
-void               list_clear           ( list* self )
+void               list_clear                   ( list* self )
 ```
 
 Iterates the list calling `<action>` on each element.
 
 ```c
-void               list_foreach         ( const list* self, void (*action)(T) )
+void               list_foreach                 ( const list* self, void (*action)(T) )
 ```
 
 Safely deletes a list.
 
 ```c
-void               list_delete          ( list* self )
+void               list_delete                  ( list* self )
 ```
 
 ## [ds_queue.h](ds/ds_queue.h)
 
 ```c
 ds_DECLARE_QUEUE_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     P,                  - The type used to sort T.
-     x_y_comparer,       - Inline comparison code used to compare priorities <x> and <y>.
-                           You can use ds_DEFAULT_COMPARE for trivial types.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     P,                      - The type used to sort T.
+     x_y_comparer,           - Inline comparison code used to compare priorities <x> and <y>.
+                               You can use ds_DEFAULT_COMPARE for trivial types.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -675,106 +676,106 @@ Returns a new queue.
 This data structure must be deleted with `queue_delete()`.
 
 ```c
-queue              queue_new            ( void )
+queue              queue_new                    ( void )
 ```
 
 Returns a new queue copied from `<queue>`.
 The new queue owns its own memory and must be deleted with `queue_delete()`.
 
 ```c
-queue              queue_copy           ( const queue* queue )
+queue              queue_copy                   ( const queue* queue )
 ```
 
 Returns the number of elements in the queue.
 
 ```c
-size_t             queue_count          ( const queue* self )
+size_t             queue_count                  ( const queue* self )
 ```
 
 Returns whether the queue is empty.
 
 ```c
-bool               queue_empty          ( const queue* self )
+bool               queue_empty                  ( const queue* self )
 ```
 
 Returns a pointer to the element in the queue with the greatest priority.
 The queue must not be empty.
 
 ```c
-T*                 queue_first          ( queue* self )
+T*                 queue_first                  ( queue* self )
 ```
 
 Returns a pointer to the element in the queue with the greatest priority.
 The queue must not be empty.
 
 ```c
-const T*           queue_first_const    ( const queue* self )
+const T*           queue_first_const            ( const queue* self )
 ```
 
 Returns a pointer to the element in the queue with the least priority.
 The queue must not be empty.
 
 ```c
-T*                 queue_last           ( queue* self )
+T*                 queue_last                   ( queue* self )
 ```
 
 Returns a pointer to the element in the queue with the least priority.
 The queue must not be empty.
 
 ```c
-const T*           queue_last_const     ( const queue* self )
+const T*           queue_last_const             ( const queue* self )
 ```
 
 Adds a new element with `<priority>` into the queue.
 
 ```c
-void               queue_push           ( queue* self, T data, P priority )
+void               queue_push                   ( queue* self, T data, P priority )
 ```
 
 Removes the element in the queue with the greatest priority.
 The queue must not be empty.
 
 ```c
-void               queue_pop_first      ( queue* self )
+void               queue_pop_first              ( queue* self )
 ```
 
 Removes the element in the queue with the least priority.
 The queue must not be empty.
 
 ```c
-void               queue_pop_last       ( queue* self )
+void               queue_pop_last               ( queue* self )
 ```
 
 Deletes all elements in the queue.
 
 ```c
-void               queue_clear          ( queue* self )
+void               queue_clear                  ( queue* self )
 ```
 
 Iterates the queue calling `<action>` on each element.
 
 ```c
-void               queue_foreach        ( const queue* self, void (*action)(T) )
+void               queue_foreach                ( const queue* self, void (*action)(T) )
 ```
 
 Safely deletes a queue.
 
 ```c
-void               queue_delete         ( queue* self )
+void               queue_delete                 ( queue* self )
 ```
 
 ## [ds_set.h](ds/ds_set.h)
 
 ```c
 ds_DECLARE_SET_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     x_y_comparer,       - Inline comparison code used to compare values <x> and <y>.
-                           You can use ds_DEFAULT_COMPARE for trivial types.
-     x_y_equals,         - Inline comparison code used to equate values <x> and <y>.
-                           You can use ds_DEFAULT_EQUALS for trivial types.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     x_y_comparer,           - Inline comparison code used to compare values <x> and <y>.
+                               You can use ds_DEFAULT_COMPARE for trivial types.
+     x_y_equals,             - Inline comparison code used to equate values <x> and <y>.
+                               You can use ds_DEFAULT_EQUALS for trivial types.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -790,128 +791,128 @@ Returns a new set.
 This data structure must be deleted with `set_delete()`.
 
 ```c
-set                set_new              ( void )
+set                set_new                      ( void )
 ```
 
 Returns a new set copied from `<set>`.
 The new set owns its own memory and must be deleted with `set_delete()`.
 
 ```c
-set                set_copy             ( const set* set )
+set                set_copy                     ( const set* set )
 ```
 
 Returns the number of elements in the set.
 
 ```c
-size_t             set_count            ( const set* self )
+size_t             set_count                    ( const set* self )
 ```
 
 Returns whether the set is empty.
 
 ```c
-bool               set_empty            ( const set* self )
+bool               set_empty                    ( const set* self )
 ```
 
 Returns a pointer to the least value in the set.
 The set must not be empty.
 
 ```c
-const T*           set_least            ( const set* self )
+const T*           set_least                    ( const set* self )
 ```
 
 Returns a pointer to the greatest value in the set.
 The set must not be empty.
 
 ```c
-const T*           set_greatest         ( const set* self )
+const T*           set_greatest                 ( const set* self )
 ```
 
 Returns a pointer to a value that matches `<data>` in the set.
 Returns `NULL` if no value matches.
 
 ```c
-const T*           set_find             ( const set* self, T data )
+const T*           set_find                     ( const set* self, T data )
 ```
 
 Returns whether the set contains `<data>`.
 
 ```c
-bool               set_contains         ( const set* self, T data )
+bool               set_contains                 ( const set* self, T data )
 ```
 
 Inserts a new element into the set.
 Returns whether a value was overwritten.
 
 ```c
-bool               set_insert           ( set* self, T data )
+bool               set_insert                   ( set* self, T data )
 ```
 
 Deletes an element in the set.
 Returns whether an element was deleted.
 
 ```c
-bool               set_erase            ( set* self, T data )
+bool               set_erase                    ( set* self, T data )
 ```
 
 Returns whether `<self>` is a subset of `<set>`.
 `<or_equal>` determines whether set equality returns true.
 
 ```c
-bool               set_subset           ( const set* self, const set* set, bool or_equal )
+bool               set_subset                   ( const set* self, const set* set, bool or_equal )
 ```
 
 Mutates `<self>` by inserting all elements in `<set>` into `<self>`.
 Returns `<self>`.
 
 ```c
-set*               set_union            ( set* self, const set* set )
+set*               set_union                    ( set* self, const set* set )
 ```
 
 Mutates `<self>` by removing elements from `<self>` not present in `<set>`.
 Returns `<self>`.
 
 ```c
-set*               set_intersect        ( set* self, const set* set )
+set*               set_intersect                ( set* self, const set* set )
 ```
 
 Mutates `<self>` by removing elements from `<self>` present in `<set>`.
 Returns `<self>`.
 
 ```c
-set*               set_difference       ( set* self, const set* set )
+set*               set_difference               ( set* self, const set* set )
 ```
 
 Deletes all elements in the set.
 
 ```c
-void               set_clear            ( set* self )
+void               set_clear                    ( set* self )
 ```
 
 Iterates the set in-order calling `<action>` on each element.
 
 ```c
-void               set_foreach          ( const set* self, void (*action)(T) )
+void               set_foreach                  ( const set* self, void (*action)(T) )
 ```
 
 Safely deletes a set.
 
 ```c
-void               set_delete           ( set* self )
+void               set_delete                   ( set* self )
 ```
 
 ## [ds_map.h](ds/ds_map.h)
 
 ```c
 ds_DECLARE_MAP_NAMED(
-     name,           - The name of the data structure and function prefix.
-     K,              - The key type used to index V.
-     V,              - The value type to generate this data structure with.
-     key_hasher,     - Inline hashing code used to hash a key named <key>.
-                       You can use ds_DEFAULT_HASH, ds_INT_HASH, ds_STRING_HASH, or a custom hasher.
-     x_y_equals,     - Inline comparison code used to equate keys <x> and <y>.
-                       You can use ds_DEFAULT_EQUALS for trivial types.
-     value_deleter,  - The name of the function used to deallocate V.
-                       ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     K,                      - The key type used to index V.
+     V,                      - The value type to generate this data structure with.
+     key_hasher,             - Inline hashing code used to hash a key named <key>.
+                               You can use ds_DEFAULT_HASH, ds_INT_HASH, ds_STRING_HASH, or a custom hasher.
+     x_y_equals,             - Inline comparison code used to equate keys <x> and <y>.
+                               You can use ds_DEFAULT_EQUALS for trivial types.
+     value_deleter,          - The name of the function used to deallocate V.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -927,113 +928,113 @@ Returns a new map with `<capacity>` number of buckets.
 This data structure must be deleted with `map_delete()`.
 
 ```c
-map                map_new              ( size_t capacity )
+map                map_new                      ( size_t capacity )
 ```
 
 Returns a new map copied from `<map>`.
 The new map owns its own memory and must be deleted with `map_delete()`.
 
 ```c
-map                map_copy             ( const map* map )
+map                map_copy                     ( const map* map )
 ```
 
 Returns the number of elements in the map.
 
 ```c
-size_t             map_count            ( const map* self )
+size_t             map_count                    ( const map* self )
 ```
 
 Returns the number of the buckets in the map.
 
 ```c
-size_t             map_capacity         ( const map* self )
+size_t             map_capacity                 ( const map* self )
 ```
 
 Returns whether the map is empty.
 
 ```c
-bool               map_empty            ( const map* self )
+bool               map_empty                    ( const map* self )
 ```
 
 Returns a pointer to a value that matches `<key>` in the map.
 Returns `NULL` if no key is found.
 
 ```c
-V*                 map_find             ( map* self, K key )
+V*                 map_find                     ( map* self, K key )
 ```
 
 Returns a pointer to a value that matches `<key>` in the map.
 Returns `NULL` if no key is found.
 
 ```c
-const V*           map_find_const       ( const map* self, K key )
+const V*           map_find_const               ( const map* self, K key )
 ```
 
 Returns whether the map contains `<key>`.
 
 ```c
-bool               map_contains         ( const map* self, K key )
+bool               map_contains                 ( const map* self, K key )
 ```
 
 Sets the number of buckets in the map.
 This must not be less than the number of elements.
 
 ```c
-void               map_resize           ( map* self, size_t capacity )
+void               map_resize                   ( map* self, size_t capacity )
 ```
 
 Inserts a new key-value pair into the map.
 Returns whether a value was overwritten.
 
 ```c
-bool               map_insert           ( map* self, K key, V value )
+bool               map_insert                   ( map* self, K key, V value )
 ```
 
 Deletes the value that matches `<key>`.
 Returns whether `<key>` was found.
 
 ```c
-bool               map_erase            ( map* self, K key )
+bool               map_erase                    ( map* self, K key )
 ```
 
 Deletes all pairs in the map.
 
 ```c
-void               map_clear            ( map* self )
+void               map_clear                    ( map* self )
 ```
 
 Iterates the map calling `<action>` on each key and value.
 
 ```c
-void               map_foreach          ( const map* self, void (*action)(K, V) )
+void               map_foreach                  ( const map* self, void (*action)(K, V) )
 ```
 
 Iterates the map calling `<action>` on each key.
 
 ```c
-void               map_foreach_key      ( const map* self, void (*action)(K) )
+void               map_foreach_key              ( const map* self, void (*action)(K) )
 ```
 
 Iterates the map calling `<action>` on each value.
 
 ```c
-void               map_foreach_value    ( const map* self, void (*action)(V) )
+void               map_foreach_value            ( const map* self, void (*action)(V) )
 ```
 
 Safely deletes a map.
 
 ```c
-void               map_delete           ( map* self )
+void               map_delete                   ( map* self )
 ```
 
 ## [ds_unique.h](ds/ds_unique.h)
 
 ```c
 ds_DECLARE_UNIQUE_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -1047,41 +1048,41 @@ Returns a new unique reference containing `<data>`.
 This data structure must be deleted with `unique_delete()`.
 
 ```c
-unique             unique_new           ( T data )
+unique             unique_new                   ( T data )
 ```
 
 Returns a pointer to `<self>`'s data.
 
 ```c
-T*                 unique_get           ( unique* self )
+T*                 unique_get                   ( unique* self )
 ```
 
 Returns a pointer to `<self>`'s data.
 
 ```c
-const T*           unique_get_const     ( const unique* self )
+const T*           unique_get_const             ( const unique* self )
 ```
 
 Resets the value in `<self>` with `<data>`.
 
 ```c
-void               unique_reset         ( unique* self, T data )
+void               unique_reset                 ( unique* self, T data )
 ```
 
 Safely deletes a unique reference.
 
 ```c
-void               unique_delete        ( unique* self )
+void               unique_delete                ( unique* self )
 ```
 
 ## [ds_shared.h](ds/ds_shared.h)
 
 ```c
 ds_DECLARE_SHARED_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -1095,58 +1096,58 @@ Returns a new shared reference containing `<data>`.
 This data structure must be deleted with `shared_delete()`.
 
 ```c
-shared             shared_new           ( T data )
+shared             shared_new                   ( T data )
 ```
 
 Returns a new shared reference with the same address as `<shared>`.
 The new shared reference increments the shared count and must be deleted with `shared_delete()`.
 
 ```c
-shared             shared_copy          ( const shared* shared )
+shared             shared_copy                  ( const shared* shared )
 ```
 
 Returns the number of shared references to `<self>`'s data.
 
 ```c
-uint               shared_shared_count  ( const shared* self )
+uint               shared_shared_count          ( const shared* self )
 ```
 
 Returns the number of weak references to `<self>`'s data.
 
 ```c
-uint               shared_weak_count    ( const shared* self )
+uint               shared_weak_count            ( const shared* self )
 ```
 
 Returns a pointer to `<self>`'s data.
 
 ```c
-T*                 shared_get           ( shared* self )
+T*                 shared_get                   ( shared* self )
 ```
 
 Returns a pointer to `<self>`'s data.
 
 ```c
-const T*           shared_get_const     ( const shared* self )
+const T*           shared_get_const             ( const shared* self )
 ```
 
 Resets the value in `<self>` with `<data>`.
 
 ```c
-void               shared_reset         ( shared* self, T data )
+void               shared_reset                 ( shared* self, T data )
 ```
 
 Safely deletes a shared reference.
 
 ```c
-void               shared_delete        ( shared* self )
+void               shared_delete                ( shared* self )
 ```
 
 ## [ds_weak.h](ds/ds_weak.h)
 
 ```c
 ds_DECLARE_WEAK_NAMED(
-     name,               - The name of the data structure and function prefix.
-     shared_name,        - The name of the shared reference data structure to extend.
+     name,                   - The name of the data structure and function prefix.
+     shared_name,            - The name of the shared reference data structure to extend.
 )
 ```
 
@@ -1162,32 +1163,32 @@ Returns a new weak reference from `<shared>`.
 This data structure must be deleted with `weak_delete()`.
 
 ```c
-weak               weak_new             ( const shared* shared )
+weak               weak_new                     ( const shared* shared )
 ```
 
 Returns a new weak reference with the same address as `<weak>`.
 The new weak reference increments the weak count and must be deleted with `weak_delete()`.
 
 ```c
-weak               weak_copy            ( const weak* weak )
+weak               weak_copy                    ( const weak* weak )
 ```
 
 Returns the number of shared references to `<self>`'s data.
 
 ```c
-uint               weak_shared_count    ( const weak* self )
+uint               weak_shared_count            ( const weak* self )
 ```
 
 Returns the number of weak references to `<self>`'s data.
 
 ```c
-uint               weak_weak_count      ( const weak* self )
+uint               weak_weak_count              ( const weak* self )
 ```
 
 Returns whether the weak reference is still valid.
 
 ```c
-bool               weak_valid           ( const weak* self )
+bool               weak_valid                   ( const weak* self )
 ```
 
 Returns a new shared reference with the same address as `<self>`.
@@ -1195,23 +1196,23 @@ Returns a new shared reference with the same address as `<self>`.
 This data structure must be deleted with `shared_delete()`.
 
 ```c
-shared             weak_upgrade         ( weak* self )
+shared             weak_upgrade                 ( weak* self )
 ```
 
 Safely deletes a weak reference.
 
 ```c
-void               weak_delete          ( weak* self )
+void               weak_delete                  ( weak* self )
 ```
 
 ## [ds_slab.h](ds/ds_slab.h)
 
 ```c
 ds_DECLARE_SLAB_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-     deleter,            - The name of the function used to deallocate T.
-                           ds_void_deleter may be used for trivial types.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
 )
 ```
 
@@ -1226,52 +1227,52 @@ Returns a new slab with a current capacity of `<capacity>` objects.
 This data structure must be deleted with `slab_delete()`.
 
 ```c
-slab               slab_new             ( size_t capacity )
+slab               slab_new                     ( size_t capacity )
 ```
 
 Returns a new slab copied from `<slab>`.
 The new slab owns its own memory and must be deleted with `slab_delete()`.
 
 ```c
-slab               slab_copy            ( const slab* slab )
+slab               slab_copy                    ( const slab* slab )
 ```
 
 Returns the number of objects in the slab.
 
 ```c
-size_t             slab_count           ( const slab* self )
+size_t             slab_count                   ( const slab* self )
 ```
 
 Returns the current maximum number of objects that can be contained in the slab.
 
 ```c
-size_t             slab_capacity        ( const slab* self )
+size_t             slab_capacity                ( const slab* self )
 ```
 
 Returns whether the slab is empty.
 
 ```c
-bool               slab_empty           ( const slab* self )
+bool               slab_empty                   ( const slab* self )
 ```
 
 Returns whether `<id>` points to a valid object.
 
 ```c
-bool               slab_valid           ( const slab* self, slab_id id )
+bool               slab_valid                   ( const slab* self, slab_id id )
 ```
 
 Returns a pointer to an object with `<id>`.
 `<id>` must be a valid ID.
 
 ```c
-T*                 slab_get             ( slab* self, slab_id id )
+T*                 slab_get                     ( slab* self, slab_id id )
 ```
 
 Returns a pointer to an object with `<id>`.
 `<id>` must be a valid ID.
 
 ```c
-const T*           slab_get_const       ( const slab* self, slab_id id )
+const T*           slab_get_const               ( const slab* self, slab_id id )
 ```
 
 Allocates a new object in the slab with `<data>`.
@@ -1279,44 +1280,44 @@ This may resize the buckets and invalidate pointers, so store the ID.
 Returns the object's new ID.
 
 ```c
-slab_id            slab_borrow          ( slab* self, T data )
+slab_id            slab_borrow                  ( slab* self, T data )
 ```
 
 Frees the memory for the object with `<id>`.
 `<id>` must be a valid ID.
 
 ```c
-void               slab_return          ( slab* self, slab_id id )
+void               slab_return                  ( slab* self, slab_id id )
 ```
 
 Deletes all objects in a slab.
 
 ```c
-void               slab_clear           ( slab* self )
+void               slab_clear                   ( slab* self )
 ```
 
 Iterates the slab calling `<action>` on each object.
 
 ```c
-void               slab_foreach         ( const slab* self, void(*action)(T) )
+void               slab_foreach                 ( const slab* self, void(*action)(T) )
 ```
 
 Safely deletes a slab.
 
 ```c
-void               slab_delete          ( slab* self )
+void               slab_delete                  ( slab* self )
 ```
 
 ## [ds_signal.h](ds/ds_signal.h)
 
 ```c
 ds_DECLARE_SIGNAL_NAMED(
-     name,               - The name of the data structure and function prefix.
-     T,                  - The type to generate this data structure with.
-                           A pointer to T is always the first argument of the function signature.
-                           You can use void here if you would like multicast signals.
-     R,                  - The return type of the function signature.
-     A...,               - Optionally any argument types of the function signature.
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+                               A pointer to T is always the first argument of the function signature.
+                               You can use void here if you would like multicast signals.
+     R,                      - The return type of the function signature.
+     A...,                   - Optionally any argument types of the function signature.
 )
 ```
 
@@ -1331,7 +1332,7 @@ Objects must unbind themselves on destruction to avoid invalid memory access on 
 signal_func is an alias for a pointer to the function signature.
 
 ```c
-typedef R (*signal_func) (T*, A...);
+typedef R(*signal_func)(T*, A...);
 ```
 
 Returns a new signal with a current capacity of `<capacity>` bindings.
@@ -1339,46 +1340,46 @@ Returns a new signal with a current capacity of `<capacity>` bindings.
 This data structure must be deleted with `signal_delete()`.
 
 ```c
-signal             signal_new           ( size_t capacity )
+signal             signal_new                   ( size_t capacity )
 ```
 
 Returns a new signal copied from `<signal>`.
 The new signal owns its own memory and must be deleted with `signal_delete()`.
 
 ```c
-signal             signal_copy          ( const signal* signal )
+signal             signal_copy                  ( const signal* signal )
 ```
 
 Returns the current number of bindings in the signal.
 
 ```c
-size_t             signal_count         ( const signal* self )
+size_t             signal_count                 ( const signal* self )
 ```
 
 Returns whether the signal has no bindings.
 
 ```c
-bool               signal_empty         ( const signal* self )
+bool               signal_empty                 ( const signal* self )
 ```
 
 Returns whether `<handle>` is bound to the signal.
 
 ```c
-bool               signal_bound         ( const signal* self, signal_handle handle )
+bool               signal_bound                 ( const signal* self, signal_handle handle )
 ```
 
 Binds `<target>` with `<func>` into the signal.
 Returns a handle to the binding for unbinding.
 
 ```c
-signal_handle      signal_bind          ( signal* self, T* target, signal_func func )
+signal_handle      signal_bind                  ( signal* self, T* target, signal_func func )
 ```
 
 Unbinds `<handle>` from the signal.
 `<handle>` must be bound to signal.
 
 ```c
-void               signal_unbind        ( signal* self, signal_handle handle )
+void               signal_unbind                ( signal* self, signal_handle handle )
 ```
 
 This is a macro, not a function.
@@ -1388,17 +1389,141 @@ Bindings are not invoked in any particular order.
 The signal can be mutated while being invoked.
 
 ```c
-MACRO              signal_invoke        ( signal* self, args... )
+MACRO              signal_invoke                ( signal* self, args... )
 ```
 
 Deletes all bindings in a signal.
 
 ```c
-void               signal_clear         ( signal* self )
+void               signal_clear                 ( signal* self )
 ```
 
 Safely deletes a signal.
 
 ```c
-void               signal_delete        ( signal* self )
+void               signal_delete                ( signal* self )
+```
+
+## [ds_optional.h](ds/ds_optional.h)
+
+```c
+ds_DECLARE_OPTIONAL_NAMED(
+     name,                   - The name of the data structure and function prefix.
+     T,                      - The type to generate this data structure with.
+     deleter,                - The name of the function used to deallocate T.
+                               ds_void_deleter may be used for trivial types.
+)
+```
+
+An optional value is just an abstraction for a value that may or may not exist.
+
+Unlike shared references which guarantee access and ownership of memory, optionals
+provide functionality for explicitly handling `NULL` values in a safe and elegant way.
+
+Returns a valid optional containing `<data>`.
+Optionals are just wrappers over data and do not allocate memory.
+This data structure must be deleted with `optional_delete()`.
+
+```c
+optional           optional_new                 ( T data )
+```
+
+Returns an empty optional indicating no value is present.
+Optionals are just wrappers over data and do not allocate memory.
+This data structure must be deleted with `optional_delete()`.
+
+```c
+optional           optional_none                ( void )
+```
+
+Returns whether the optional has a value.
+
+```c
+bool               optional_valid               ( const optional* self )
+```
+
+Returns whether the optional does not have a value.
+
+```c
+bool               optional_empty               ( const optional* self )
+```
+
+Releases and returns the optional's value.
+The optional must not be empty.
+
+```c
+T                  optional_take                ( optional* self )
+```
+
+Releases and returns the optional's value or `<data>` if it is empty.
+This does not set the optional.
+
+```c
+T                  optional_take_or             ( optional* self, T data )
+```
+
+Returns a pointer to the optional's value.
+The optional must not be empty.
+
+```c
+T*                  optional_borrow             ( optional* self )
+```
+
+Returns a pointer to the optional's value.
+The optional must not be empty.
+
+```c
+const T*            optional_borrow_const       ( const optional* self )
+```
+
+Resets the optional's value.
+This will overwrite the current value, if any.
+
+```c
+void               optional_reset               ( optional* self, T data )
+```
+
+Deletes the optional's current value, if any.
+
+```c
+void               optional_clear               ( optional* self )
+```
+
+Mutates the optional only if it is valid.
+This replaces the optional's value after calling `<transform>`.
+The optional's value is not deleted, only updated.
+Returns `<self>`.
+
+```c
+optional*          optional_map                 ( optional* self, T(*transform)(T) )
+```
+
+Mutates the optional only if it is valid.
+This deletes the optional if `<predicate>` returns false.
+Returns `<self>`.
+
+```c
+optional*          optional_filter              ( optional* self, bool(*predicate)(T) )
+```
+
+Mutates the optional only if it is valid.
+`<data>` is "applied" to the optional's value using `<accumulator>`:
+`if value => value = accumulator(value, data)`
+Returns `<self>`.
+
+```c
+optional*          optional_reduce              ( optional* self, T(*accumulator)(T, T), T data )
+```
+
+Calls `<action>` with the optional's value only if it is valid.
+Returns `<self>`.
+
+```c
+const optional*    optional_foreach             ( const optional* self, void(*action)(T) )
+```
+
+Safely deletes the optional's value only if it is valid.
+
+```c
+void               optional_delete              ( optional* self )
 ```

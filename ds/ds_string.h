@@ -1,5 +1,5 @@
 // .h
-// Generic Mutable String Data Structure
+// ds.h Mutable String Data Structure
 // by Kyle Furey
 
 /**

@@ -1,5 +1,5 @@
 // .h
-// Data Structure Declarations
+// ds.h Declarations
 // by Kyle Furey
 
 /**
@@ -98,7 +98,7 @@
 #define ds_STRING_HASH     ds_hashify(ds_strlen(key), key)
 
 /** A value of a pointer with no data. */
-#define ds_NULL ((void *) 0)
+#define ds_NULL NULL
 
 /** An index indicating something was not found. */
 #define ds_NOT_FOUND ((ds_size) -1)

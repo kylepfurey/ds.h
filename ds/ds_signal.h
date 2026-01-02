@@ -1,5 +1,5 @@
 // .h
-// Generic Multicast Event Data Structure
+// ds.h Multicast Event Data Structure
 // by Kyle Furey
 
 /**
@@ -27,7 +27,7 @@
  *
  * * signal_func is an alias for a pointer to the function signature.
  *
- *   typedef R (*signal_func) (T*, A...);
+ *   typedef R(*signal_func)(T*, A...);
  *
  * * Returns a new signal with a current capacity of <capacity> bindings.
  * * <capacity> must be greater than 0.

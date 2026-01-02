@@ -1,5 +1,5 @@
 // .h
-// Data Structure Standard Library Includes
+// ds.h Standard Library Includes
 // by Kyle Furey
 
 /**

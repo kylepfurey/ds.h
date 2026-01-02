@@ -1,5 +1,5 @@
 // .h
-// Generic Block Allocator Data Structure
+// ds.h Block Allocator Data Structure
 // by Kyle Furey
 
 /**
